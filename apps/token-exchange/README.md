@@ -27,15 +27,18 @@ If credentials are valid and the team already exists in the organisation, the se
 ```json
 {
   "credentials": {
-    "apiKey": "your-3rd-party-api-key",
-    "secret": "optional-secret"
+    "host": "https://api.pinogy.com",
+    "accessKey": "your-pos-access-key",
+    "secretKey": "your-pos-secret-key",
+    "password": "your-pos-password",
+    "appId": 4
   },
   "slug": "my-team",
   "organisationId": "clxx..."
 }
 ```
 
-- `credentials` – object to validate against your third-party system (structure is up to you).
+- `credentials` – POS API credentials. Validated via `POST /apps/any/sessions` (sign_in). On success, `DELETE /apps/any/sessions/{id}` is called to clean up. `host` defaults to `https://` if omitted. `appId` defaults to `4` (CASH_REGISTER).
 - `slug` – team URL slug (e.g. `my-team` → `https://sign.pinogy.com/t/my-team`).
 - `organisationId` – Documenso organisation ID (from the main app).
 
@@ -103,7 +106,12 @@ Future<String?> exchangeForApiKey({
 // Usage
 void main() async {
   final apiKey = await exchangeForApiKey(
-    credentials: {'apiKey': 'abc123', 'secret': 'xyz'},
+    credentials: {
+      'host': 'https://api.pinogy.com',
+      'accessKey': 'your-pos-access-key',
+      'secretKey': 'your-pos-secret-key',
+      'password': 'your-pos-password',
+    },
     slug: 'my-mobile-team',
     organisationId: 'clxx...',
   );
@@ -114,22 +122,12 @@ void main() async {
 }
 ```
 
-## Configuration
+## POS API integration
 
-Add `lib/validate-credentials.ts` and implement your third-party validation:
+Credentials are validated against the Pinogy POS API (`POClient`):
 
-```ts
-export async function validateThirdPartyCredentials(
-  credentials: Record<string, unknown>,
-): Promise<boolean> {
-  const response = await fetch('https://your-3rd-party.com/api/verify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(credentials),
-  });
-  return response.ok;
-}
-```
+1. **sign_in** – `POST /apps/any/sessions` with `accesskey`, `timestamp`, `signature` (HMAC-SHA256 of `path + timestamp` with `secretKey`), `password`, `app_id`. If 200 and response includes `token`, credentials are valid.
+2. **sign_out** – `DELETE /apps/any/sessions/{id}` is called to clean up the session.
 
 ## Environment variables
 

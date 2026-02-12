@@ -57,6 +57,21 @@ Set these in the **Environment** section of each service. Use `https://sign.pino
 | `NEXT_PRIVATE_DATABASE_URL` | *(auto from Blueprint)* |
 | `NEXT_PRIVATE_DIRECT_DATABASE_URL` | *(auto from Blueprint)* |
 
+### Private / restricted use (recommended for internal deployments)
+
+For internal use (e.g. contracts between your customers and theirs), restrict signup and org creation:
+
+| Key | Value |
+|-----|--------|
+| `NEXT_PUBLIC_DISABLE_SIGNUP` | `true` |
+| `NEXT_PUBLIC_RESTRICT_ORGANISATION_CREATION_TO_ADMIN` | `true` |
+
+Then promote your user to admin (run locally with `.env` pointing at your production DB, or via Render Shell):
+
+```bash
+npm run promote:admin your@email.com
+```
+
 ### Optional (can add later)
 
 - **SMTP** (for emails): `NEXT_PRIVATE_SMTP_TRANSPORT`, `NEXT_PRIVATE_SMTP_HOST`, `NEXT_PRIVATE_SMTP_PORT`, `NEXT_PRIVATE_SMTP_USERNAME`, `NEXT_PRIVATE_SMTP_PASSWORD`, `NEXT_PRIVATE_SMTP_FROM_NAME`, `NEXT_PRIVATE_SMTP_FROM_ADDRESS`.
@@ -111,6 +126,7 @@ If you prefer not to use the Blueprint:
 
 ## 6. Troubleshooting
 
+- **"Something went wrong" on login**: See [docs/TROUBLESHOOTING-LOGIN.md](docs/TROUBLESHOOTING-LOGIN.md). Most often caused by `NEXTAUTH_URL` / `NEXT_PUBLIC_WEBAPP_URL` not matching your custom domain (e.g. set both to `https://sign.pinogy.com`).
 - **Build fails**: Ensure **Build Command** is exactly `npm ci && npm run build` and **Root Directory** is empty.
 - **Migrations fail**: Confirm the database is running and the URL is the **Internal Database URL** (not external) for the same region.
 - **502 / app not starting**: Check the **Logs** tab. Ensure all required env vars are set, especially `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and both database URLs.

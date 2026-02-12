@@ -1,28 +1,33 @@
+import type { POSCredentials } from './pos-client';
+import { validatePOSCredentials } from './pos-client';
+
+function isPOSCredentials(credentials: Record<string, unknown>): credentials is POSCredentials {
+  return (
+    typeof credentials.host === 'string' &&
+    typeof credentials.accessKey === 'string' &&
+    typeof credentials.secretKey === 'string' &&
+    typeof credentials.password === 'string'
+  );
+}
+
 /**
- * Validate third-party credentials.
- *
- * Override this function to integrate with your external system.
- * Return true if credentials are valid, false otherwise.
+ * Validate third-party (POS) credentials via sign_in.
+ * Calls POST /apps/any/sessions; on success, calls DELETE to sign out and clean up.
  */
 export async function validateThirdPartyCredentials(
   credentials: Record<string, unknown>,
 ): Promise<boolean> {
-  // TODO: Implement validation against your 3rd party system.
-  // Example: Call their API to verify the credentials.
-  //
-  // const response = await fetch('https://your-3rd-party.com/api/verify', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(credentials),
-  // });
-  // return response.ok;
-
-  if (!credentials || Object.keys(credentials).length === 0) {
+  if (!credentials || !isPOSCredentials(credentials)) {
     return false;
   }
 
-  // Stub: Accept any non-empty credentials for development.
-  // Replace with real validation before production.
-  await Promise.resolve();
-  return true;
+  const result = await validatePOSCredentials({
+    host: credentials.host,
+    accessKey: credentials.accessKey,
+    secretKey: credentials.secretKey,
+    password: credentials.password,
+    appId: typeof credentials.appId === 'number' ? credentials.appId : undefined,
+  });
+
+  return result.valid;
 }
