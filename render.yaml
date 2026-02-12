@@ -4,14 +4,14 @@
 #   - token-exchange: https://sign-token.pinogy.com
 databases:
   - name: documenso-db
-    plan: free
+    plan: basic-256mb
     region: oregon
 
 services:
   - type: web
     runtime: node
     name: documenso-app
-    plan: free
+    plan: standard
     buildCommand: npm ci && npm run build
     # Run migrations from root, then start server from apps/remix (turbo runs start from root so main.js path would be wrong)
     startCommand: npx prisma migrate deploy --schema packages/prisma/schema.prisma && (cd apps/remix && node build/server/main.js)
@@ -52,7 +52,7 @@ services:
 
       # SMTP
       - key: NEXT_PRIVATE_SMTP_TRANSPORT
-        value: 'smtp-auth'
+        value: "smtp-auth"
       - key: NEXT_PRIVATE_SMTP_HOST
         sync: false
       - key: NEXT_PRIVATE_SMTP_PORT
@@ -80,7 +80,7 @@ services:
 
       # Storage
       - key: NEXT_PUBLIC_UPLOAD_TRANSPORT
-        value: 'database'
+        value: "database"
       - key: NEXT_PRIVATE_UPLOAD_ENDPOINT
         sync: false
       - key: NEXT_PRIVATE_UPLOAD_FORCE_PATH_STYLE
@@ -167,7 +167,7 @@ services:
   - type: web
     runtime: node
     name: token-exchange
-    plan: free
+    plan: starter
     buildCommand: npm ci && npm run build --filter=@documenso/token-exchange
     startCommand: cd apps/token-exchange && npm run start
     healthCheckPath: /api/health
