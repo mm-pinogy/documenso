@@ -1,5 +1,7 @@
 # Deploy Documenso to Render with Render Postgres.
-# Production URL: https://sign.pinogy.com (add as custom domain in Render).
+# Production URLs (add as custom domains in Render):
+#   - documenso-app: https://sign.pinogy.com
+#   - token-exchange: https://sign-token.pinogy.com
 databases:
   - name: documenso-db
     plan: free

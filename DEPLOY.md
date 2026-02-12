@@ -2,16 +2,27 @@
 
 This guide deploys Documenso to Render using **Render Postgres** as the database. The Blueprint creates the database and wires it to both the main app and token-exchange service.
 
-**Production URL:** `https://sign.pinogy.com`
+**Production URLs:**
+- Main app: `https://sign.pinogy.com`
+- Token exchange: `https://sign-token.pinogy.com`
 
 ## 1. Deploy with the Blueprint (Recommended)
+
+The `render.yaml` Blueprint is the recommended way to deploy. It is **reproducible** because:
+
+- **Infrastructure as code** – `render.yaml` defines the full stack: database, main app, and token-exchange. Anyone with access can deploy the same setup from the same file.
+- **Environment variables** – `fromDatabase` and `fromService` inject values automatically. No manual copying of URLs.
+- **Single source of truth** – Push changes to the Blueprint; Render syncs and redeploys. Repeatable across environments (staging, dev) by pointing different Blueprints at different branches.
+- **Version control** – The Blueprint lives in your repo. Changes are reviewed, audited, and rolled back with your code.
+
+### Steps
 
 1. In the [Render Dashboard](https://dashboard.render.com/), click **New +** → **Blueprint**.
 2. Connect your GitHub account if needed, then select the **documenso** repository.
 3. Render reads `render.yaml` and creates:
    - **documenso-db** – Render Postgres (free tier)
    - **documenso-app** – Main web app
-   - **token-exchange** – API token exchange service for mobile apps
+   - **token-exchange** – API token exchange service for mobile apps (e.g. `https://sign-token.pinogy.com`—set custom domain in step 4)
 
 4. Database URLs are injected automatically. In the **documenso-app** Environment tab, set:
    - `NEXTAUTH_URL` → `https://sign.pinogy.com` (or your service URL until domain is set)
@@ -58,12 +69,23 @@ Set these in the **Environment** section of each service. Use `https://sign.pino
 2. Migrations run via the start command: `npx prisma migrate deploy`.
 3. The app starts and connects to the database over Render’s internal network.
 
-## 4. Custom Domain (sign.pinogy.com)
+## 4. Custom Domains
 
-1. In Render: **Settings** → **Custom Domains** → **Add Custom Domain**.
-2. Enter `sign.pinogy.com` and follow Render’s instructions (add the CNAME or A record they show).
-3. Ensure `NEXTAUTH_URL`, `NEXT_PUBLIC_WEBAPP_URL`, and `NEXT_PRIVATE_INTERNAL_WEBAPP_URL` are all `https://sign.pinogy.com` in **Environment**.
-4. Run **Manual Deploy** (Deploys → Deploy latest commit) so the app uses the correct URL.
+### documenso-app (sign.pinogy.com)
+
+1. Select the **documenso-app** service.
+2. **Settings** → **Custom Domains** → **Add Custom Domain**.
+3. Enter `sign.pinogy.com` and follow Render’s instructions (add the CNAME or A record they show).
+4. Ensure `NEXTAUTH_URL`, `NEXT_PUBLIC_WEBAPP_URL`, and `NEXT_PRIVATE_INTERNAL_WEBAPP_URL` are all `https://sign.pinogy.com` in **Environment**.
+5. Run **Manual Deploy** (Deploys → Deploy latest commit) so the app uses the correct URL.
+
+### token-exchange (sign-token.pinogy.com)
+
+1. Select the **token-exchange** service.
+2. **Settings** → **Custom Domains** → **Add Custom Domain**.
+3. Enter `sign-token.pinogy.com` and add the CNAME or A record they show.
+4. No environment changes needed for the token-exchange service.
+5. Use `https://sign-token.pinogy.com/api/exchange` in your Flutter app (see `apps/token-exchange/README.md`).
 
 ## 5. Using a Manual Setup Instead of Blueprint
 
