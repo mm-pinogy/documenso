@@ -4,11 +4,8 @@ export type POSCredentials = {
   host: string;
   accessKey: string;
   secretKey: string;
-  password: string;
   appId?: number;
 };
-
-const DEFAULT_APP_ID = 4; // CASH_REGISTER from AppId
 
 function normalizeHost(host: string): string {
   const trimmed = host.trim();
@@ -29,43 +26,38 @@ function signature(path: string, timestampValue: string, secretKey: string): str
 }
 
 /**
- * Validate credentials by calling POS sign_in.
- * Creates a session; optionally sign_out to clean up.
+ * Validate credentials by calling GET /apps/any/test.
+ * Uses accesskey, signature (HMAC-SHA256 of path+timestamp with secretKey), and timestamp.
+ * Matches the Flutter NetworkRepository checkServer flow (no password required).
  */
 export async function validatePOSCredentials(
   credentials: POSCredentials,
 ): Promise<{ valid: true } | { valid: false; error: string }> {
-  const { host, accessKey, secretKey, password, appId = DEFAULT_APP_ID } = credentials;
+  const { host, accessKey, secretKey } = credentials;
 
-  if (!host || !accessKey || !secretKey || !password) {
-    return { valid: false, error: 'Missing host, accessKey, secretKey, or password' };
+  if (!host || !accessKey || !secretKey) {
+    return { valid: false, error: 'Missing host, accessKey, or secretKey' };
   }
 
   const baseUrl = normalizeHost(host);
-  const path = '/apps/any/sessions';
+  const path = '/apps/any/test';
   const timestampValue = timestamp();
   const sig = signature(path, timestampValue, secretKey);
 
-  const formBody = new URLSearchParams({
+  const params = new URLSearchParams({
     accesskey: accessKey,
     timestamp: timestampValue,
     signature: sig,
-    password,
-    app_id: String(appId),
   });
 
-  const signInUrl = baseUrl.replace(/\/$/, '') + path;
+  const testUrl = `${baseUrl.replace(/\/$/, '')}${path}?${params.toString()}`;
 
   let response: Response;
 
   try {
-    response = await fetch(signInUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Accept: '*/*',
-      },
-      body: formBody.toString(),
+    response = await fetch(testUrl, {
+      method: 'GET',
+      headers: { Accept: '*/*' },
       signal: AbortSignal.timeout(15000),
     });
   } catch (err) {
@@ -77,48 +69,20 @@ export async function validatePOSCredentials(
     const body = await response.text();
     return {
       valid: false,
-      error: `POS sign_in failed (${response.status}): ${body.slice(0, 200)}`,
+      error: `POS test failed (${response.status}): ${body.slice(0, 200)}`,
     };
   }
 
-  let json: { token?: string; id?: string | number };
+  let json: Record<string, unknown>;
 
   try {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    json = (await response.json()) as { token?: string; id?: string | number };
+    json = (await response.json()) as Record<string, unknown>;
   } catch {
     return { valid: false, error: 'POS API returned invalid JSON' };
   }
 
-  if (!json.token) {
-    return { valid: false, error: 'POS sign_in did not return a token' };
-  }
-
-  const sessionId = json.id;
-
-  if (typeof sessionId !== 'undefined' && sessionId !== null) {
-    const signOutPath = `/apps/any/sessions/${sessionId}`;
-    const signOutTimestamp = timestamp();
-    const signOutSig = signature(signOutPath, signOutTimestamp, secretKey);
-
-    const signOutParams = new URLSearchParams({
-      accesskey: accessKey,
-      timestamp: signOutTimestamp,
-      signature: signOutSig,
-      session: json.token,
-    });
-
-    const signOutUrl = `${baseUrl.replace(/\/$/, '')}${signOutPath}?${signOutParams.toString()}`;
-
-    try {
-      await fetch(signOutUrl, {
-        method: 'DELETE',
-        headers: { Accept: '*/*' },
-        signal: AbortSignal.timeout(5000),
-      });
-    } catch {
-      // Ignore sign_out errors; validation already succeeded
-    }
+  if (json.error) {
+    return { valid: false, error: `POS API error: ${String(json.error)}` };
   }
 
   return { valid: true };

@@ -5,14 +5,14 @@ function isPOSCredentials(credentials: Record<string, unknown>): credentials is 
   return (
     typeof credentials.host === 'string' &&
     typeof credentials.accessKey === 'string' &&
-    typeof credentials.secretKey === 'string' &&
-    typeof credentials.password === 'string'
+    typeof credentials.secretKey === 'string'
   );
 }
 
 /**
- * Validate third-party (POS) credentials via sign_in.
- * Calls POST /apps/any/sessions; on success, calls DELETE to sign out and clean up.
+ * Validate third-party (POS) credentials via GET /apps/any/test.
+ * Uses accesskey, signature (HMAC-SHA256 of path+timestamp with secretKey), and timestamp.
+ * Matches the Flutter NetworkRepository checkServer flow (no password required).
  */
 export async function validateThirdPartyCredentials(
   credentials: Record<string, unknown>,
@@ -25,7 +25,6 @@ export async function validateThirdPartyCredentials(
     host: credentials.host,
     accessKey: credentials.accessKey,
     secretKey: credentials.secretKey,
-    password: credentials.password,
     appId: typeof credentials.appId === 'number' ? credentials.appId : undefined,
   });
 

@@ -29,16 +29,14 @@ If credentials are valid and the team already exists in the organisation, the se
   "credentials": {
     "host": "https://api.pinogy.com",
     "accessKey": "your-pos-access-key",
-    "secretKey": "your-pos-secret-key",
-    "password": "your-pos-password",
-    "appId": 4
+    "secretKey": "your-pos-secret-key"
   },
   "slug": "my-team",
   "organisationId": "clxx..."
 }
 ```
 
-- `credentials` – POS API credentials. Validated via `POST /apps/any/sessions` (sign_in). On success, `DELETE /apps/any/sessions/{id}` is called to clean up. `host` defaults to `https://` if omitted. `appId` defaults to `4` (CASH_REGISTER).
+- `credentials` – POS API credentials (`host`, `accessKey`, `secretKey`). Validated via `GET /apps/any/test` with accesskey, signature (HMAC-SHA256 of path+timestamp with secretKey), and timestamp. Matches the Flutter `NetworkRepository.checkServer` flow. No password required. `host` defaults to `https://` if omitted.
 - `slug` – team URL slug (e.g. `my-team` → `https://sign.pinogy.com/t/my-team`).
 - `organisationId` – Documenso organisation ID (from the main app).
 
@@ -109,8 +107,7 @@ void main() async {
     credentials: {
       'host': 'https://api.pinogy.com',
       'accessKey': 'your-pos-access-key',
-      'secretKey': 'your-pos-secret-key',
-      'password': 'your-pos-password',
+      'secretKey': 'your-pos-secret-key',  // decrypted secretKey from AppSharedSettings
     },
     slug: 'my-mobile-team',
     organisationId: 'clxx...',
@@ -124,10 +121,9 @@ void main() async {
 
 ## POS API integration
 
-Credentials are validated against the Pinogy POS API (`POClient`):
+Credentials are validated against the Pinogy POS API using the same flow as the Flutter `NetworkRepository.checkServer`:
 
-1. **sign_in** – `POST /apps/any/sessions` with `accesskey`, `timestamp`, `signature` (HMAC-SHA256 of `path + timestamp` with `secretKey`), `password`, `app_id`. If 200 and response includes `token`, credentials are valid.
-2. **sign_out** – `DELETE /apps/any/sessions/{id}` is called to clean up the session.
+- **GET /apps/any/test** – Validates `accesskey`, `signature` (HMAC-SHA256 of `path + timestamp` with `secretKey`), and `timestamp` as query params. No password required. If 200 and response has no `error` key, credentials are valid.
 
 ## Environment variables
 
