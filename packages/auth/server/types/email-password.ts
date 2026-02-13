@@ -37,6 +37,7 @@ export const ZSignUpSchema = z.object({
   email: z.string().email(),
   password: ZPasswordSchema,
   signature: z.string().nullish(),
+  inviteToken: z.string().min(1).optional(),
 });
 
 export type TSignUpSchema = z.infer<typeof ZSignUpSchema>;

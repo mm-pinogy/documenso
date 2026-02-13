@@ -1,0 +1,80 @@
+# Token Exchange service - Deployment and Service
+# Deploy to GKE namespace "sign"
+# Apply: kubectl apply -f k8s/sign/token-exchange.yaml -n sign
+#
+# Prerequisites:
+# - Create Secret "token-exchange-secrets" with TOKEN_EXCHANGE_SECRET, NEXT_PRIVATE_DATABASE_URL, NEXT_PRIVATE_DIRECT_DATABASE_URL
+# - Or use the same documenso-secrets if both apps share the same DB credentials
+# - Update image to your Artifact Registry path after building
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: token-exchange
+  namespace: sign
+  labels:
+    app: token-exchange
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: token-exchange
+  template:
+    metadata:
+      labels:
+        app: token-exchange
+    spec:
+      containers:
+        - name: token-exchange
+          # Replace with your image after running scripts/build-and-push-gke.sh
+          image: us-central1-docker.pkg.dev/pinogy-websites/documenso/token-exchange:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+              name: http
+          envFrom:
+            - secretRef:
+                name: token-exchange-secrets
+          env:
+            - name: PORT
+              value: "3000"
+            - name: NODE_ENV
+              value: production
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "250m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: token-exchange
+  namespace: sign
+  labels:
+    app: token-exchange
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 3000
+      protocol: TCP
+      name: http
+  selector:
+    app: token-exchange

@@ -1,0 +1,86 @@
+###########################
+#     BASE CONTAINER      #
+###########################
+FROM node:22-alpine3.22 AS base
+
+RUN apk add --no-cache openssl
+
+###########################
+#    BUILDER CONTAINER    #
+###########################
+FROM base AS builder
+
+RUN apk add --no-cache libc6-compat jq
+WORKDIR /app
+
+COPY . .
+
+RUN npm install -g "turbo@^1.9.3"
+RUN turbo prune --scope=@documenso/token-exchange --docker
+
+###########################
+#   INSTALLER CONTAINER   #
+###########################
+FROM base AS installer
+
+RUN apk add --no-cache libc6-compat jq make cmake g++ openssl bash
+
+WORKDIR /app
+
+ENV HUSKY 0
+ENV DOCKER_OUTPUT 1
+ENV NEXT_TELEMETRY_DISABLED 1
+
+COPY .gitignore .gitignore
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/out/package-lock.json ./package-lock.json
+
+COPY --from=builder /app/patches ./patches
+
+RUN npm ci
+
+COPY --from=builder /app/out/full/ .
+COPY turbo.json turbo.json
+
+# Ensure public dir exists (Next.js optional)
+RUN mkdir -p apps/token-exchange/public
+
+RUN npm install -g "turbo@^1.9.3"
+RUN turbo run build --filter=@documenso/token-exchange...
+
+###########################
+#     RUNNER CONTAINER    #
+###########################
+FROM base AS runner
+
+ENV HUSKY 0
+ENV DOCKER_OUTPUT 1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nodejs
+
+USER nodejs
+
+WORKDIR /app
+
+COPY --from=builder --chown=nodejs:nodejs /app/out/json/ .
+COPY --from=builder --chown=nodejs:nodejs /app/patches ./patches
+
+RUN npm ci --only=production
+
+COPY --from=installer --chown=nodejs:nodejs /app/apps/token-exchange/.next ./apps/token-exchange/.next
+COPY --from=installer --chown=nodejs:nodejs /app/apps/token-exchange/public ./apps/token-exchange/public
+COPY --from=installer --chown=nodejs:nodejs /app/apps/token-exchange/package.json ./apps/token-exchange/package.json
+COPY --from=installer --chown=nodejs:nodejs /app/packages/prisma ./packages/prisma
+COPY --from=installer --chown=nodejs:nodejs /app/packages/lib ./packages/lib
+
+RUN npx prisma generate --schema ./packages/prisma/schema.prisma
+
+WORKDIR /app/apps/token-exchange
+
+ENV NODE_ENV=production
+ENV PORT=3000
+
+EXPOSE 3000
+
+CMD ["npx", "next", "start"]

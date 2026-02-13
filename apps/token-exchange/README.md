@@ -113,10 +113,32 @@ void main() async {
     organisationId: 'clxx...',
   );
   if (apiKey != null) {
-    // Use apiKey with Documenso API at documensoUrl
-    // e.g. POST /api/v2/documents with Authorization: Bearer $apiKey
+    // Use apiKey with Documenso API at documensoUrl (NOT tokenExchangeUrl)
+    // e.g. POST $documensoUrl/api/v2/envelope/create with Authorization: Bearer $apiKey
   }
 }
+```
+
+### Important: two different URLs
+
+| Service | URL | Purpose |
+|---------|-----|---------|
+| **Token exchange** | `https://sign-token.pinogy.com` | `POST /api/exchange` – exchange POS credentials for an API key |
+| **Documenso API** | `https://sign.pinogy.com` | Create envelopes, documents, etc. – use the API key here |
+
+**Common mistake:** Calling `envelope/create` on the token-exchange URL. That endpoint lives on the **main app** (`sign.pinogy.com`).
+
+**Using the API key for envelope.create:**
+
+```dart
+// After getting apiKey from exchange:
+final response = await http.post(
+  Uri.parse('https://sign.pinogy.com/api/v2/envelope/create'),
+  headers: {
+    'Authorization': 'Bearer $apiKey',  // or just 'Authorization': apiKey
+  },
+  body: formData,  // multipart/form-data with payload + files
+);
 ```
 
 ## POS API integration

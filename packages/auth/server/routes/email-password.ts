@@ -1,6 +1,6 @@
 import { sValidator } from '@hono/standard-validator';
 import { compare } from '@node-rs/bcrypt';
-import { UserSecurityAuditLogType } from '@prisma/client';
+import { OrganisationMemberInviteStatus, UserSecurityAuditLogType } from '@prisma/client';
 import { Hono } from 'hono';
 import { DateTime } from 'luxon';
 import { z } from 'zod';
@@ -142,13 +142,31 @@ export const emailPasswordRoute = new Hono<HonoAuthContext>()
    * Signup endpoint.
    */
   .post('/signup', sValidator('json', ZSignUpSchema), async (c) => {
-    if (env('NEXT_PUBLIC_DISABLE_SIGNUP') === 'true') {
-      throw new AppError('SIGNUP_DISABLED', {
-        message: 'Signups are disabled.',
-      });
-    }
+    const { name, email, password, signature, inviteToken } = c.req.valid('json');
 
-    const { name, email, password, signature } = c.req.valid('json');
+    if (env('NEXT_PUBLIC_DISABLE_SIGNUP') === 'true') {
+      // Allow signup only when user has a valid organisation invite token
+      if (!inviteToken) {
+        throw new AppError('SIGNUP_DISABLED', {
+          message: 'Signups are disabled.',
+        });
+      }
+
+      const invite = await prisma.organisationMemberInvite.findUnique({
+        where: { token: inviteToken },
+        select: { email: true, status: true },
+      });
+
+      if (
+        !invite ||
+        invite.status === OrganisationMemberInviteStatus.DECLINED ||
+        invite.email.toLowerCase() !== email.toLowerCase()
+      ) {
+        throw new AppError('SIGNUP_DISABLED', {
+          message: 'Signups are disabled.',
+        });
+      }
+    }
 
     const user = await createUser({ name, email, password, signature }).catch((err) => {
       console.error(err);

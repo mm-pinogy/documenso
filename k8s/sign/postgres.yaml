@@ -1,0 +1,100 @@
+# PostgreSQL 18 - small in-cluster database for Documenso
+# Deploy: kubectl apply -f k8s/sign/postgres.yaml -n sign
+#
+# Create the secret first (replace values):
+#   kubectl create secret generic postgres-credentials -n sign \
+#     --from-literal=POSTGRES_USER=documenso \
+#     --from-literal=POSTGRES_PASSWORD='your-secure-password' \
+#     --from-literal=POSTGRES_DB=documenso
+#
+# Connection URL for documenso-app and token-exchange:
+#   postgresql://documenso:your-secure-password@postgres:5432/documenso
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-data
+  namespace: sign
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: sign
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:18-alpine
+          ports:
+            - containerPort: 5432
+              name: postgres
+          envFrom:
+            - secretRef:
+                name: postgres-credentials
+          volumeMounts:
+            # PG 18+ recommends mounting parent dir so data lives in subdir (pg_upgrade --link friendly)
+            - name: data
+              mountPath: /var/lib/postgresql
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - documenso
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - documenso
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: postgres-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: sign
+  labels:
+    app: postgres
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+      name: postgres
+  selector:
+    app: postgres

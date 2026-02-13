@@ -81,6 +81,9 @@ COPY turbo.json turbo.json
 
 RUN npm install -g "turbo@^1.9.3"
 
+# Give Node more memory for lingui extract (worker threads can timeout in constrained Docker envs)
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 RUN turbo run build --filter=@documenso/remix...
 
 ###########################

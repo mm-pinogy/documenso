@@ -1,0 +1,66 @@
+# cert-manager + Let's Encrypt for sign Gateway
+# Apply after: 1) Gateway is deployed, 2) cert-manager is installed, 3) DNS points to Gateway IP
+# Usage: kubectl apply -f k8s/sign/cert-manager.yaml -n sign
+#
+# The Certificate uses HTTP-01 challenge via sign-gateway (port 80).
+# After issuance, Secret sign-tls is created and the Gateway's HTTPS listener uses it.
+# GKE shares the URL map between HTTP/HTTPS, so app routes capture ACME traffic.
+# Before applying: kubectl delete httproute sign-app-route sign-token-route -n sign
+# After cert is ready: kubectl apply -f k8s/sign/gateway.yaml -n sign
+
+---
+# Let's Encrypt production issuer
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: mark.meadows@pinogy.com  # Change to your email for expiry notifications
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+      - http01:
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: sign-gateway
+                namespace: sign
+                kind: Gateway
+                sectionName: http
+---
+# Let's Encrypt staging (use for testing to avoid rate limits)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: admin@pinogy.com
+    privateKeySecretRef:
+      name: letsencrypt-staging-account-key
+    solvers:
+      - http01:
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: sign-gateway
+                namespace: sign
+                kind: Gateway
+                sectionName: http
+---
+# Certificate for sign.pinogy.com and sign-token.pinogy.com
+# Uses letsencrypt-prod. Switch to letsencrypt-staging for testing.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sign-tls
+  namespace: sign
+spec:
+  secretName: sign-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - sign.pinogy.com
+    - sign-token.pinogy.com

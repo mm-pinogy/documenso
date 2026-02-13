@@ -1,5 +1,5 @@
 import { PDF } from '@libpdf/core';
-import { EnvelopeType } from '@prisma/client';
+import { EnvelopeType, FieldType } from '@prisma/client';
 
 import { DOCUMENT_AUDIT_LOG_TYPE } from '@documenso/lib/types/document-audit-logs';
 import type { TFieldAndMeta } from '@documenso/lib/types/field-meta';
@@ -59,6 +59,41 @@ export interface CreateEnvelopeFieldsOptions {
 
 const isPlaceholderPosition = (position: FieldPosition): position is PlaceholderPosition => {
   return 'placeholder' in position;
+};
+
+/**
+ * Common placeholder alternatives by field type. When the primary placeholder
+ * is not found, these are tried (with case-insensitive search) to support
+ * documents built with different placeholder formats (e.g. _SIGNATURE_ vs {{signature}}).
+ */
+const PLACEHOLDER_ALTERNATIVES: Partial<Record<FieldType, string[]>> = {
+  [FieldType.SIGNATURE]: ['{{signature}}', '_SIGNATURE_', '{{signature, r1}}', 'SIGNATURE'],
+  [FieldType.FREE_SIGNATURE]: ['{{signature}}', '_SIGNATURE_', '{{signature, r1}}', 'SIGNATURE'],
+  [FieldType.INITIALS]: ['{{initials}}', '_INITIAL_', '{{initials, r1}}', 'INITIALS'],
+  [FieldType.NAME]: ['{{name}}', '_NAME_', '{{name, r1}}'],
+  [FieldType.EMAIL]: ['{{email}}', '_EMAIL_', '{{email, r1}}'],
+  [FieldType.DATE]: ['{{date}}', '_DATE_', '{{date, r1}}'],
+  [FieldType.TEXT]: ['{{text}}', '_TEXT_', '{{text, r1}}'],
+};
+
+const findPlaceholderInPdf = (
+  pdfDoc: PDF,
+  placeholder: string,
+  fieldType: FieldType,
+): { matches: ReturnType<PDF['findText']>; resolvedPlaceholder: string } | null => {
+  const toTry = [
+    placeholder,
+    ...(PLACEHOLDER_ALTERNATIVES[fieldType] ?? []).filter((alt) => alt !== placeholder),
+  ];
+
+  for (const candidate of toTry) {
+    const matches = pdfDoc.findText(candidate, { caseSensitive: false });
+    if (matches.length > 0) {
+      return { matches, resolvedPlaceholder: candidate };
+    }
+  }
+
+  return null;
 };
 
 export const createEnvelopeFields = async ({
@@ -178,14 +213,19 @@ export const createEnvelopeFields = async ({
         });
       }
 
-      const matches = pdfDoc.findText(field.placeholder);
+      const result = findPlaceholderInPdf(pdfDoc, field.placeholder, field.type);
 
-      if (matches.length === 0) {
+      if (!result) {
+        const alternatives = PLACEHOLDER_ALTERNATIVES[field.type];
+        const tried = alternatives
+          ? ` (also tried: ${alternatives.slice(0, 3).join(', ')}${alternatives.length > 3 ? '...' : ''})`
+          : '';
         throw new AppError(AppErrorCode.INVALID_BODY, {
-          message: `Placeholder "${field.placeholder}" not found in PDF`,
+          message: `Placeholder "${field.placeholder}" not found in PDF${tried}`,
         });
       }
 
+      const { matches } = result;
       const matchesToProcess = field.matchAll ? matches : [matches[0]];
       const pages = pdfDoc.getPages();
 

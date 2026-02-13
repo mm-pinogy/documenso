@@ -1,0 +1,148 @@
+# Build and deploy Documenso to GKE (Google Artifact Registry + Kubernetes)
+#
+# Trigger: Manual (Actions tab → Build and deploy to GKE → Run workflow)
+#
+# Required secrets:
+#   GCP_SA_KEY - JSON key for a GCP service account with:
+#     - Artifact Registry Writer (to push images)
+#     - Kubernetes Engine Developer (to deploy, if deploy step enabled)
+#
+# Optional secrets (for deploy step):
+#   GKE_CLUSTER - GKE cluster name (e.g. my-cluster)
+#   GKE_ZONE     - GKE zone (e.g. us-central1-a) or GKE_REGION for regional
+#   GKE_PROJECT  - GCP project (defaults to GCP_PROJECT_ID from auth)
+
+name: Build and deploy to GKE
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Image tag (e.g. latest, v1.0.0, or git SHA)'
+        required: false
+        default: 'latest'
+        type: string
+      app_only:
+        description: 'Build documenso-app only (skip token-exchange)'
+        required: false
+        default: false
+        type: boolean
+      deploy:
+        description: 'Deploy to GKE after build (requires GKE_CLUSTER, GKE_ZONE secrets)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  GCP_PROJECT_ID: pinogy-websites
+  GCP_REGION: us-central1
+  REPO_NAME: documenso
+
+jobs:
+  build-and-push:
+    name: Build and push images
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.vars.outputs.tag }}
+      documenso_app_image: ${{ steps.vars.outputs.documenso_app_image }}
+      token_exchange_image: ${{ steps.vars.outputs.token_exchange_image }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set variables
+        id: vars
+        run: |
+          TAG="${{ inputs.tag }}"
+          if [ "$TAG" = "latest" ] || [ -z "$TAG" ]; then
+            TAG="latest"
+          fi
+          REGISTRY="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPO_NAME }}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "documenso_app_image=${REGISTRY}/documenso-app:${TAG}" >> $GITHUB_OUTPUT
+          echo "token_exchange_image=${REGISTRY}/token-exchange:${TAG}" >> $GITHUB_OUTPUT
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Ensure Artifact Registry repository exists
+        run: |
+          gcloud artifacts repositories describe ${{ env.REPO_NAME }} \
+            --location=${{ env.GCP_REGION }} \
+            --project=${{ env.GCP_PROJECT_ID }} 2>/dev/null || \
+          gcloud artifacts repositories create ${{ env.REPO_NAME }} \
+            --repository-format=docker \
+            --location=${{ env.GCP_REGION }} \
+            --project=${{ env.GCP_PROJECT_ID }} \
+            --description="Documenso container images"
+
+      - name: Build and push documenso-app
+        run: |
+          docker build \
+            -t ${{ steps.vars.outputs.documenso_app_image }} \
+            -f docker/Dockerfile \
+            .
+          docker push ${{ steps.vars.outputs.documenso_app_image }}
+
+      - name: Build and push token-exchange
+        if: ${{ !inputs.app_only }}
+        run: |
+          docker build \
+            -t ${{ steps.vars.outputs.token_exchange_image }} \
+            -f docker/Dockerfile.token-exchange \
+            .
+          docker push ${{ steps.vars.outputs.token_exchange_image }}
+
+  deploy:
+    name: Deploy to GKE
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: inputs.deploy
+
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Install gke-gcloud-auth-plugin
+        run: |
+          gcloud components install gke-gcloud-auth-plugin --quiet
+
+      - name: Get GKE credentials
+        run: |
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} \
+            --zone=${{ secrets.GKE_ZONE }} \
+            --project=${{ secrets.GKE_PROJECT || env.GCP_PROJECT_ID }}
+
+      - name: Deploy documenso-app
+        run: |
+          kubectl set image deployment/documenso-app \
+            documenso-app=${{ needs.build-and-push.outputs.documenso_app_image }} \
+            -n sign
+          kubectl rollout status deployment/documenso-app -n sign --timeout=120s
+
+      - name: Deploy token-exchange
+        if: ${{ !inputs.app_only }}
+        run: |
+          kubectl set image deployment/token-exchange \
+            token-exchange=${{ needs.build-and-push.outputs.token_exchange_image }} \
+            -n sign
+          kubectl rollout status deployment/token-exchange -n sign --timeout=120s

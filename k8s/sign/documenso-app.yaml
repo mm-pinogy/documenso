@@ -1,0 +1,80 @@
+# Documenso main app - Deployment and Service
+# Deploy to GKE namespace "sign"
+# Apply: kubectl apply -f k8s/sign/documenso-app.yaml -n sign
+#
+# Prerequisites:
+# - Create Secret "documenso-secrets" with env vars (see DEPLOY.md for required keys)
+# - Or use External Secrets / Google Secret Manager
+# - Update image to your Artifact Registry path after building
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: documenso-app
+  namespace: sign
+  labels:
+    app: documenso-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: documenso-app
+  template:
+    metadata:
+      labels:
+        app: documenso-app
+    spec:
+      containers:
+        - name: documenso-app
+          # Replace with your image after running scripts/build-and-push-gke.sh
+          image: us-central1-docker.pkg.dev/pinogy-websites/documenso/documenso-app:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+              name: http
+          envFrom:
+            - secretRef:
+                name: documenso-secrets
+          env:
+            - name: PORT
+              value: "3000"
+            - name: NODE_ENV
+              value: production
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: documenso-app
+  namespace: sign
+  labels:
+    app: documenso-app
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 3000
+      protocol: TCP
+      name: http
+  selector:
+    app: documenso-app

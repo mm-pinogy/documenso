@@ -368,9 +368,22 @@ Instead of specifying exact coordinates, you can position fields using placehold
 
 This is useful when:
 
-- You have PDFs with designated placeholder text (e.g., `{{signature}}`, `[SIGN HERE]`)
+- You have PDFs with designated placeholder text (e.g., `{{signature}}`, `_SIGNATURE_`, `[SIGN HERE]`)
 - You want field positions to adapt to document content changes
 - You're working with templated documents generated from other systems
+
+**Supported placeholder formats:** The API searches case-insensitively. If the primary placeholder is not found, it tries common alternatives for each field type:
+
+| Field Type | Alternatives tried (in order)                                    |
+| ---------- | ---------------------------------------------------------------- |
+| SIGNATURE  | `{{signature}}`, `_SIGNATURE_`, `{{signature, r1}}`, `SIGNATURE` |
+| INITIALS   | `{{initials}}`, `_INITIAL_`, `{{initials, r1}}`, `INITIALS`      |
+| NAME       | `{{name}}`, `_NAME_`, `{{name, r1}}`                             |
+| EMAIL      | `{{email}}`, `_EMAIL_`, `{{email, r1}}`                          |
+| DATE       | `{{date}}`, `_DATE_`, `{{date, r1}}`                             |
+| TEXT       | `{{text}}`, `_TEXT_`, `{{text, r1}}`                             |
+
+For documents built with `_SIGNATURE_` or `_INITIAL_` placeholders, use `placeholder: "_SIGNATURE_"` or `placeholder: "_INITIAL_"` in your API request. The system will find the text even if it appears slightly differently in the PDF.
 
 ```sh
 curl https://app.documenso.com/api/v2/envelope/field/create-many \

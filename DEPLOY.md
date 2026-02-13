@@ -24,10 +24,10 @@ The `render.yaml` Blueprint is the recommended way to deploy. It is **reproducib
    - **documenso-app** – Main web app
    - **token-exchange** – API token exchange service for mobile apps (e.g. `https://sign-token.pinogy.com`—set custom domain in step 4)
 
-4. Database URLs are injected automatically. In the **documenso-app** Environment tab, set:
-   - `NEXTAUTH_URL` → `https://sign.pinogy.com` (or your service URL until domain is set)
-   - `NEXT_PUBLIC_WEBAPP_URL` → same
-   - `NEXT_PRIVATE_INTERNAL_WEBAPP_URL` → same
+4. Database URLs are injected automatically. In the **documenso-app** Environment tab, **you must set these three URL variables manually** (they are not auto-filled; the Blueprint uses `sync: false` so custom domains work):
+   - `NEXTAUTH_URL` → `https://sign.pinogy.com` (or your Render service URL, e.g. `https://documenso-app-xxxx.onrender.com`, until the custom domain is ready)
+   - `NEXT_PUBLIC_WEBAPP_URL` → same value
+   - `NEXT_PRIVATE_INTERNAL_WEBAPP_URL` → same value
    - All other required vars from step 2 below.
 
 5. Click **Apply** to create the resources.
@@ -91,8 +91,8 @@ npm run promote:admin your@email.com
 1. Select the **documenso-app** service.
 2. **Settings** → **Custom Domains** → **Add Custom Domain**.
 3. Enter `sign.pinogy.com` and follow Render’s instructions (add the CNAME or A record they show).
-4. Ensure `NEXTAUTH_URL`, `NEXT_PUBLIC_WEBAPP_URL`, and `NEXT_PRIVATE_INTERNAL_WEBAPP_URL` are all `https://sign.pinogy.com` in **Environment**.
-5. Run **Manual Deploy** (Deploys → Deploy latest commit) so the app uses the correct URL.
+4. **Critical for login:** In **Environment**, set `NEXTAUTH_URL`, `NEXT_PUBLIC_WEBAPP_URL`, and `NEXT_PRIVATE_INTERNAL_WEBAPP_URL` to `https://sign.pinogy.com`. If these still point to the Render URL (`*.onrender.com`), auth will fail on the custom domain.
+5. Run **Manual Deploy** (Deploys → Deploy latest commit) so the app is rebuilt with the correct URLs.
 
 ### token-exchange (sign-token.pinogy.com)
 
