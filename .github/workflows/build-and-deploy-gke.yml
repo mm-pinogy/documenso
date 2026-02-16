@@ -7,10 +7,10 @@
 #     - Artifact Registry Writer (to push images)
 #     - Kubernetes Engine Developer (to deploy, if deploy step enabled)
 #
-# Optional secrets (for deploy step):
+# For deploy step, set either secrets or variables (variables are fine - not sensitive):
 #   GKE_CLUSTER - GKE cluster name (e.g. my-cluster)
-#   GKE_ZONE     - GKE zone (e.g. us-central1-a) or GKE_REGION for regional
-#   GKE_PROJECT  - GCP project (defaults to GCP_PROJECT_ID from auth)
+#   GKE_ZONE    - Zone or region (e.g. us-central1-a or us-central1)
+#   GKE_PROJECT - (optional) GCP project; defaults to GCP_PROJECT_ID
 
 name: Build and deploy to GKE
 
@@ -112,18 +112,23 @@ jobs:
     if: inputs.deploy
 
     steps:
-      - name: Validate GKE secrets
+      - name: Validate GKE cluster config
+        id: gke-config
         run: |
-          if [ -z "${{ secrets.GKE_CLUSTER }}" ]; then
-            echo "::error::GKE_CLUSTER secret is not set. Add it in Settings → Secrets and variables → Actions."
+          GKE_CLUSTER="${{ secrets.GKE_CLUSTER || vars.GKE_CLUSTER }}"
+          GKE_ZONE="${{ secrets.GKE_ZONE || vars.GKE_ZONE }}"
+          if [ -z "$GKE_CLUSTER" ]; then
+            echo "::error::GKE_CLUSTER is not set. Add it as a secret or variable in Settings → Secrets and variables → Actions."
             echo "Get your cluster name with: gcloud container clusters list --project=pinogy-websites"
             exit 1
           fi
-          if [ -z "${{ secrets.GKE_ZONE }}" ]; then
-            echo "::error::GKE_ZONE secret is not set. Add it in Settings → Secrets and variables → Actions."
+          if [ -z "$GKE_ZONE" ]; then
+            echo "::error::GKE_ZONE is not set. Add it as a secret or variable in Settings → Secrets and variables → Actions."
             echo "Use zone (e.g. us-central1-a) or region (e.g. us-central1) for regional clusters."
             exit 1
           fi
+          echo "cluster=$GKE_CLUSTER" >> $GITHUB_OUTPUT
+          echo "zone=$GKE_ZONE" >> $GITHUB_OUTPUT
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
@@ -141,9 +146,9 @@ jobs:
 
       - name: Get GKE credentials
         run: |
-          gcloud container clusters get-credentials "${{ secrets.GKE_CLUSTER }}" \
-            --location="${{ secrets.GKE_ZONE }}" \
-            --project="${{ secrets.GKE_PROJECT || env.GCP_PROJECT_ID }}"
+          gcloud container clusters get-credentials "${{ steps.gke-config.outputs.cluster }}" \
+            --location="${{ steps.gke-config.outputs.zone }}" \
+            --project="${{ secrets.GKE_PROJECT || vars.GKE_PROJECT || env.GCP_PROJECT_ID }}"
 
       - name: Deploy documenso-app
         run: |

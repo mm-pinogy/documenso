@@ -30,11 +30,10 @@ Connection URL: `postgresql://documenso:your-secure-password@postgres:5432/docum
 
 **Option A: GitHub Actions** (recommended for CI/CD)
 
-1. Add repository secrets in **Settings → Secrets and variables → Actions**:
-   - `GCP_SA_KEY` – JSON key for a GCP service account with **Artifact Registry Writer** (and **Kubernetes Engine Developer** if using deploy step)
-   - `GKE_CLUSTER` – GKE cluster name (only if using deploy step)
-   - `GKE_ZONE` – GKE zone, e.g. `us-central1-a` (only if using deploy step)
-   - `GKE_PROJECT` – (optional) GCP project; defaults to `pinogy-websites`
+1. Add in **Settings → Secrets and variables → Actions**:
+   - **Secrets:** `GCP_SA_KEY` (required) – JSON key for a GCP service account with **Artifact Registry Writer** (and **Kubernetes Engine Developer** if using deploy step)
+   - **Secrets or variables** (for deploy step): `GKE_CLUSTER`, `GKE_ZONE` – variables are fine since these aren't sensitive
+   - **Optional:** `GKE_PROJECT` – GCP project; defaults to `pinogy-websites`
 
 2. Go to **Actions → Build and deploy to GKE → Run workflow**. Choose tag (default `latest`), optionally enable deploy.
 
