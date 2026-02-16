@@ -30,6 +30,7 @@ import { mapEnvelopeToTemplateLite } from '@documenso/lib/utils/templates';
 
 import { ZGenericSuccessResponse, ZSuccessResponseSchema } from '../schema';
 import { authenticatedProcedure, maybeAuthenticatedProcedure, router } from '../trpc';
+import { createEnvelopeRoute } from './create-envelope';
 import { getTemplatesByIdsRoute } from './get-templates-by-ids';
 import {
   ZBulkSendTemplateMutationSchema,
@@ -538,6 +539,11 @@ export const templateRouter = router({
         teamId,
       });
     }),
+
+  /**
+   * @public
+   */
+  createEnvelope: createEnvelopeRoute,
 
   /**
    * Leaving this endpoint as private for now until there is a use case for it.

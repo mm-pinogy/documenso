@@ -88,6 +88,48 @@ List completed templates for the team. Proxies to Documenso's templates API.
 
 - `envelopeId` – The Documenso envelope ID (e.g. `envelope_xxxxxxxx`). Use this when calling Documenso APIs that expect an envelope ID. Do not use `id` (legacy template ID) for envelope-based API calls.
 
+### `POST /api/template/{templateEnvelopeId}/create-envelope`
+
+Creates a document envelope from a template and distributes it to a single recipient. Returns the envelope ID and signing URL.
+
+**Authentication:** `Authorization: Bearer <TOKEN_EXCHANGE_SECRET>` or `X-API-Key: <TOKEN_EXCHANGE_SECRET>`
+
+**Documenso API key:** `X-Documenso-API-Key` header or `apiKey` query param (required)
+
+**Path param:** `templateEnvelopeId` – The template's envelope ID (e.g. `envelope_xxxxxxxx`). Use the `envelopeId` from the templates list.
+
+**Request body (JSON):**
+
+```json
+{
+  "recipientEmail": "signer@example.com",
+  "recipientName": "Jane Doe",
+  "title": "Contract for Jane",
+  "prefillFields": [
+    { "id": 1, "type": "text", "value": "Prefilled value" }
+  ]
+}
+```
+
+- `recipientEmail` – **Required.** Email of the signing recipient.
+- `recipientName` – Optional. Name of the recipient.
+- `title` – Optional. Document title.
+- `prefillFields` – Optional. Array of prefill values for template fields (text, number, radio, checkbox, dropdown).
+
+**Success (200):**
+
+```json
+{
+  "envelopeId": "envelope_xxxxxxxx",
+  "signingUrl": "https://sign.pinogy.com/sign/abc123...",
+  "signingToken": "abc123..."
+}
+```
+
+- `envelopeId` – The created document's envelope ID.
+- `signingUrl` – Full URL for the recipient to sign.
+- `signingToken` – Token to build a custom signing URL if needed.
+
 ### `POST /api/exchange`
 
 **Authentication:** `Authorization: Bearer <TOKEN_EXCHANGE_SECRET>` or `X-API-Key: <TOKEN_EXCHANGE_SECRET>`
