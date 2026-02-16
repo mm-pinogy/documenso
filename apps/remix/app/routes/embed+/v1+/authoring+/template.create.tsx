@@ -3,6 +3,7 @@ import { useLayoutEffect, useState } from 'react';
 import { useLingui } from '@lingui/react';
 import { useNavigate } from 'react-router';
 
+import { AppError } from '@documenso/lib/errors/app-error';
 import { putPdfFile } from '@documenso/lib/universal/upload/put-file';
 import { trpc } from '@documenso/trpc/react';
 import { Stepper } from '@documenso/ui/primitives/stepper';
@@ -118,10 +119,14 @@ export default function EmbeddingAuthoringTemplateCreatePage() {
     } catch (err) {
       console.error('Error creating template:', err);
 
+      const appError = AppError.parseError(err);
+      const errorMessage =
+        appError.userMessage || appError.message || _('Failed to create template');
+
       toast({
         variant: 'destructive',
         title: _('Error'),
-        description: _('Failed to create template'),
+        description: errorMessage,
       });
     }
   };

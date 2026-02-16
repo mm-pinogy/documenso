@@ -223,10 +223,8 @@ export const createEnvelope = async ({
   );
 
   // Check if user has permission to set the global action auth.
-  if (
-    (authOptions.globalActionAuth.length > 0 || recipientsHaveActionAuth) &&
-    !team.organisation.organisationClaim.flags.cfr21
-  ) {
+  const flags = team.organisation.organisationClaim?.flags as { cfr21?: boolean } | null;
+  if ((authOptions.globalActionAuth.length > 0 || recipientsHaveActionAuth) && !flags?.cfr21) {
     throw new AppError(AppErrorCode.UNAUTHORIZED, {
       message: 'You do not have permission to set the action auth',
     });

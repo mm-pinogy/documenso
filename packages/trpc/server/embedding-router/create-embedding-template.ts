@@ -106,8 +106,11 @@ export const createEmbeddingTemplateRoute = procedure
         throw error;
       }
 
+      const message = error instanceof Error ? error.message : 'Failed to create template';
+      console.error('createEmbeddingTemplate error:', error);
       throw new AppError(AppErrorCode.UNKNOWN_ERROR, {
-        message: 'Failed to create template',
+        message,
+        userMessage: message,
       });
     }
   });
