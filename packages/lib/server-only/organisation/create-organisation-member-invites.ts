@@ -181,9 +181,12 @@ export const sendOrganisationMemberInviteEmail = async ({
   token,
   organisation,
 }: SendOrganisationMemberInviteEmailOptions) => {
+  const baseUrl = NEXT_PUBLIC_WEBAPP_URL();
+  const assetBaseUrl = baseUrl || 'http://localhost:3000';
+
   const template = createElement(OrganisationInviteEmailTemplate, {
-    assetBaseUrl: NEXT_PUBLIC_WEBAPP_URL(),
-    baseUrl: NEXT_PUBLIC_WEBAPP_URL(),
+    assetBaseUrl,
+    baseUrl,
     senderName,
     token,
     organisationName: organisation.name,
@@ -211,11 +214,34 @@ export const sendOrganisationMemberInviteEmail = async ({
 
   const i18n = await getI18nInstance(emailLanguage);
 
+  const inviteUrl = `${baseUrl}/organisation/invite/${token}`;
+  const declineUrl = `${baseUrl}/organisation/decline/${token}`;
+
+  const escapeHtml = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  const fallbackText = [
+    `Join ${organisation.name} on Documenso`,
+    '',
+    `You have been invited to join the following organisation by ${senderName}:`,
+    organisation.name,
+    '',
+    `Accept: ${inviteUrl}`,
+    `Decline: ${declineUrl}`,
+  ].join('\n');
+
+  const fallbackHtml = [
+    `<p>Join ${escapeHtml(organisation.name)} on Documenso</p>`,
+    `<p>You have been invited to join the following organisation by ${escapeHtml(senderName)}:</p>`,
+    `<p><strong>${escapeHtml(organisation.name)}</strong></p>`,
+    `<p><a href="${inviteUrl}">Accept</a> | <a href="${declineUrl}">Decline</a></p>`,
+  ].join('');
+
   await mailer.sendMail({
     to: email,
     from: senderEmail,
     subject: i18n._(msg`You have been invited to join ${organisation.name} on Documenso`),
-    html,
-    text,
+    html: (html && html.trim().length > 0 ? html : fallbackHtml) || fallbackHtml,
+    text: (text && text.trim().length > 0 ? text : fallbackText) || fallbackText,
   });
 };

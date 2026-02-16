@@ -70,6 +70,7 @@ kubectl create secret generic token-exchange-secrets \
   --from-literal=TOKEN_EXCHANGE_SECRET='...' \
   --from-literal=NEXT_PRIVATE_DATABASE_URL='postgresql://...' \
   --from-literal=NEXT_PRIVATE_DIRECT_DATABASE_URL='postgresql://...' \
+  --from-literal=DOCUMENSO_URL='https://sign.pinogy.com' \
   -n sign
 ```
 

@@ -18,6 +18,73 @@ If credentials are valid and the team already exists in the organisation, the se
 
 ## API
 
+### `POST /api/document-request`
+
+Request a document template from an email address. Sends a link to the recipient; they upload a document, place placeholders, and save. The template is stored with the team.
+
+**Authentication:** `Authorization: Bearer <TOKEN_EXCHANGE_SECRET>` or `X-API-Key: <TOKEN_EXCHANGE_SECRET>`
+
+**Request body (JSON):**
+
+```json
+{
+  "recipientEmail": "user@example.com",
+  "apiKey": "api_xxxxxxxx",
+  "expiresIn": 60
+}
+```
+
+- `recipientEmail` – Optional. Email address (for your records; the main app UI can use this when sending the link via its own SMTP).
+- `apiKey` – Documenso API key from `/api/exchange`. Use this OR the credentials block below.
+- `expiresIn` – Presign token expiry in minutes (default 60, max 10080).
+- `credentials`, `slug`, `organisationId` – Alternative to `apiKey`: perform exchange first to obtain the API key.
+
+**Success (200):**
+
+```json
+{
+  "link": "https://sign.pinogy.com/embed/v1/authoring/template/create?token=...",
+  "expiresAt": "2025-02-16T...",
+  "expiresIn": 3600,
+  "recipientEmail": "user@example.com"
+}
+```
+
+The endpoint returns the link only. Your main app UI is responsible for displaying it or sending it via your existing SMTP/email configuration.
+
+### `GET /api/templates`
+
+List completed templates for the team. Proxies to Documenso's templates API.
+
+**Authentication:** `Authorization: Bearer <TOKEN_EXCHANGE_SECRET>` or `X-API-Key: <TOKEN_EXCHANGE_SECRET>`
+
+**Query params:**
+
+- `apiKey` – **Required.** Documenso API key from `/api/exchange`. Can also be passed via `X-Documenso-API-Key` header.
+- `page` – Page number (default 1).
+- `perPage` – Items per page (default 10, max 100).
+
+**Success (200):**
+
+```json
+{
+  "templates": [
+    {
+      "id": 1,
+      "externalId": null,
+      "type": "GENERAL",
+      "title": "Contract",
+      "userId": 1,
+      "teamId": 1,
+      "createdAt": "...",
+      "updatedAt": "...",
+      "directLink": { "token": "...", "enabled": false }
+    }
+  ],
+  "totalPages": 1
+}
+```
+
 ### `POST /api/exchange`
 
 **Authentication:** `Authorization: Bearer <TOKEN_EXCHANGE_SECRET>` or `X-API-Key: <TOKEN_EXCHANGE_SECRET>`
@@ -154,6 +221,7 @@ Credentials are validated against the Pinogy POS API using the same flow as the 
 | `TOKEN_EXCHANGE_SECRET` | Yes | Secret for authenticating requests (Bearer or X-API-Key). |
 | `NEXT_PRIVATE_DATABASE_URL` | Yes | Same as main app (Supabase pooler). |
 | `NEXT_PRIVATE_DIRECT_DATABASE_URL` | Yes | Same as main app (Supabase direct). |
+| `DOCUMENSO_URL` | Yes (for document-request, templates) | Base URL of the main Documenso app (e.g. `https://sign.pinogy.com`). |
 
 ## Local development
 

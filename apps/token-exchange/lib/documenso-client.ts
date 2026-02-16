@@ -1,0 +1,92 @@
+/**
+ * Client for calling the Documenso main app API.
+ * Used for create-presign-token and get-templates.
+ */
+
+const getDocumensoUrl = (): string => {
+  const url = process.env.DOCUMENSO_URL ?? process.env.NEXT_PUBLIC_DOCUMENSO_URL;
+  if (!url) {
+    throw new Error('DOCUMENSO_URL or NEXT_PUBLIC_DOCUMENSO_URL is not set');
+  }
+  return url.replace(/\/$/, '');
+};
+
+export type CreatePresignTokenResponse = {
+  token: string;
+  expiresAt: string;
+  expiresIn: number;
+};
+
+export async function createPresignToken(
+  apiKey: string,
+  options?: { expiresIn?: number; scope?: string },
+): Promise<CreatePresignTokenResponse> {
+  const baseUrl = getDocumensoUrl();
+  const res = await fetch(`${baseUrl}/api/v2-beta/embedding/create-presign-token`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      expiresIn: options?.expiresIn ?? 60,
+      scope: options?.scope,
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Documenso create-presign-token failed (${res.status}): ${body.slice(0, 300)}`);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return res.json() as Promise<CreatePresignTokenResponse>;
+}
+
+export type TemplateListItem = {
+  id: number;
+  externalId: string | null;
+  type: string;
+  title: string;
+  userId: number;
+  teamId: number | null;
+  createdAt: string;
+  updatedAt: string;
+  directLink?: { token: string; enabled: boolean } | null;
+};
+
+export type GetTemplatesResponse = {
+  templates: TemplateListItem[];
+  totalPages: number;
+};
+
+export async function getTemplates(
+  apiKey: string,
+  options?: { page?: number; perPage?: number },
+): Promise<GetTemplatesResponse> {
+  const baseUrl = getDocumensoUrl();
+  const params = new URLSearchParams();
+  if (options?.page) params.set('page', String(options.page));
+  if (options?.perPage) params.set('perPage', String(options.perPage));
+
+  const url = `${baseUrl}/api/v1/templates${params.toString() ? `?${params}` : ''}`;
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    },
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Documenso get-templates failed (${res.status}): ${body.slice(0, 300)}`);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return res.json() as Promise<GetTemplatesResponse>;
+}
+
+export function buildTemplateAuthoringLink(presignToken: string): string {
+  const baseUrl = getDocumensoUrl();
+  return `${baseUrl}/embed/v1/authoring/template/create?token=${encodeURIComponent(presignToken)}`;
+}

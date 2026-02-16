@@ -27,6 +27,11 @@ on:
         required: false
         default: false
         type: boolean
+      exchange_only:
+        description: 'Build and deploy token-exchange only (skip documenso-app)'
+        required: false
+        default: false
+        type: boolean
       deploy:
         description: 'Deploy to GKE after build (requires GKE_CLUSTER, GKE_ZONE secrets)'
         required: false
@@ -89,6 +94,7 @@ jobs:
             --description="Documenso container images"
 
       - name: Build and push documenso-app
+        if: ${{ !inputs.exchange_only }}
         run: |
           docker build \
             -t ${{ steps.vars.outputs.documenso_app_image }} \
@@ -97,7 +103,7 @@ jobs:
           docker push ${{ steps.vars.outputs.documenso_app_image }}
 
       - name: Build and push token-exchange
-        if: ${{ !inputs.app_only }}
+        if: ${{ !inputs.app_only || inputs.exchange_only }}
         run: |
           docker build \
             -t ${{ steps.vars.outputs.token_exchange_image }} \
@@ -151,6 +157,7 @@ jobs:
             --project="${{ secrets.GKE_PROJECT || vars.GKE_PROJECT || env.GCP_PROJECT_ID }}"
 
       - name: Deploy documenso-app
+        if: ${{ !inputs.exchange_only }}
         run: |
           kubectl set image deployment/documenso-app \
             documenso-app=${{ needs.build-and-push.outputs.documenso_app_image }} \
@@ -158,7 +165,7 @@ jobs:
           kubectl rollout status deployment/documenso-app -n sign --timeout=120s
 
       - name: Deploy token-exchange
-        if: ${{ !inputs.app_only }}
+        if: ${{ !inputs.app_only || inputs.exchange_only }}
         run: |
           kubectl set image deployment/token-exchange \
             token-exchange=${{ needs.build-and-push.outputs.token_exchange_image }} \
