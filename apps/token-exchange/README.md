@@ -71,6 +71,7 @@ List completed templates for the team. Proxies to Documenso's templates API.
   "templates": [
     {
       "id": 1,
+      "envelopeId": "envelope_xxxxxxxx",
       "externalId": null,
       "type": "GENERAL",
       "title": "Contract",
@@ -84,6 +85,8 @@ List completed templates for the team. Proxies to Documenso's templates API.
   "totalPages": 1
 }
 ```
+
+- `envelopeId` – The Documenso envelope ID (e.g. `envelope_xxxxxxxx`). Use this when calling Documenso APIs that expect an envelope ID. Do not use `id` (legacy template ID) for envelope-based API calls.
 
 ### `POST /api/exchange`
 

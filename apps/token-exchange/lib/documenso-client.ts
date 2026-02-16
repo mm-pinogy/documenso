@@ -45,6 +45,7 @@ export async function createPresignToken(
 
 export type TemplateListItem = {
   id: number;
+  envelopeId?: string;
   externalId: string | null;
   type: string;
   title: string;
