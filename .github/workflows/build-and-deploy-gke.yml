@@ -112,6 +112,19 @@ jobs:
     if: inputs.deploy
 
     steps:
+      - name: Validate GKE secrets
+        run: |
+          if [ -z "${{ secrets.GKE_CLUSTER }}" ]; then
+            echo "::error::GKE_CLUSTER secret is not set. Add it in Settings → Secrets and variables → Actions."
+            echo "Get your cluster name with: gcloud container clusters list --project=pinogy-websites"
+            exit 1
+          fi
+          if [ -z "${{ secrets.GKE_ZONE }}" ]; then
+            echo "::error::GKE_ZONE secret is not set. Add it in Settings → Secrets and variables → Actions."
+            echo "Use zone (e.g. us-central1-a) or region (e.g. us-central1) for regional clusters."
+            exit 1
+          fi
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
@@ -128,9 +141,9 @@ jobs:
 
       - name: Get GKE credentials
         run: |
-          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} \
-            --zone=${{ secrets.GKE_ZONE }} \
-            --project=${{ secrets.GKE_PROJECT || env.GCP_PROJECT_ID }}
+          gcloud container clusters get-credentials "${{ secrets.GKE_CLUSTER }}" \
+            --location="${{ secrets.GKE_ZONE }}" \
+            --project="${{ secrets.GKE_PROJECT || env.GCP_PROJECT_ID }}"
 
       - name: Deploy documenso-app
         run: |
