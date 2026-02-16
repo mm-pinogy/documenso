@@ -71,7 +71,6 @@ List completed templates for the team. Proxies to Documenso's templates API.
   "templates": [
     {
       "id": 1,
-      "envelopeId": "envelope_xxxxxxxx",
       "externalId": null,
       "type": "GENERAL",
       "title": "Contract",
@@ -86,17 +85,17 @@ List completed templates for the team. Proxies to Documenso's templates API.
 }
 ```
 
-- `envelopeId` – The Documenso envelope ID (e.g. `envelope_xxxxxxxx`). Use this when calling Documenso APIs that expect an envelope ID. Do not use `id` (legacy template ID) for envelope-based API calls.
-
-### `POST /api/template/{templateEnvelopeId}/create-envelope`
+### `POST /api/template/{templateId}/create-envelope`
 
 Creates a document envelope from a template and distributes it to a single recipient. Returns the envelope ID and signing URL.
+
+**Base URL:** Use the token-exchange URL (e.g. `https://sign-token.pinogy.com`), not the main app URL.
 
 **Authentication:** `Authorization: Bearer <TOKEN_EXCHANGE_SECRET>` or `X-API-Key: <TOKEN_EXCHANGE_SECRET>`
 
 **Documenso API key:** `X-Documenso-API-Key` header or `apiKey` query param (required)
 
-**Path param:** `templateEnvelopeId` – The template's envelope ID (e.g. `envelope_xxxxxxxx`). Use the `envelopeId` from the templates list.
+**Path param:** `templateId` – The template ID from the templates list (e.g. `1`). Use the `id` field from `GET /api/templates`.
 
 **Request body (JSON):**
 

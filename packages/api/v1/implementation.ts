@@ -702,7 +702,6 @@ export const ApiContractV1Implementation = tsr.router(ApiContractV1, {
         body: {
           templates: templates.map((template) => ({
             id: mapSecondaryIdToTemplateId(template.secondaryId),
-            envelopeId: template.id,
             externalId: template.externalId,
             type: template.templateType,
             title: template.title,

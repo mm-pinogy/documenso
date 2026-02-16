@@ -14,6 +14,16 @@ import {
   createEnvelopeMeta,
 } from './create-envelope.types';
 
+function parseTemplateIdInput(value: string): { type: 'templateId'; id: number } {
+  const num = Number(value.trim());
+  if (Number.isInteger(num) && num > 0) {
+    return { type: 'templateId', id: num };
+  }
+  throw new AppError(AppErrorCode.INVALID_BODY, {
+    message: 'Invalid template ID. Use the id from the templates list (e.g. 1).',
+  });
+}
+
 export const createEnvelopeRoute = authenticatedProcedure
   .meta(createEnvelopeMeta)
   .input(ZCreateEnvelopeRequestSchema)
@@ -36,11 +46,10 @@ export const createEnvelopeRoute = authenticatedProcedure
       });
     }
 
+    const templateIdOption = parseTemplateIdInput(templateEnvelopeId);
+
     const template = await getEnvelopeById({
-      id: {
-        type: 'envelopeId',
-        id: templateEnvelopeId,
-      },
+      id: templateIdOption,
       type: EnvelopeType.TEMPLATE,
       userId: user.id,
       teamId,
@@ -55,10 +64,7 @@ export const createEnvelopeRoute = authenticatedProcedure
     }
 
     const createdEnvelope = await createDocumentFromTemplate({
-      id: {
-        type: 'envelopeId',
-        id: templateEnvelopeId,
-      },
+      id: templateIdOption,
       userId: user.id,
       teamId,
       recipients: [

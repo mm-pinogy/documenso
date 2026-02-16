@@ -17,9 +17,7 @@ export const createEnvelopeMeta: TrpcRouteMeta = {
 };
 
 export const ZCreateEnvelopeRequestSchema = z.object({
-  templateEnvelopeId: z
-    .string()
-    .describe('The envelope ID of the template (e.g. envelope_xxxxxxxx).'),
+  templateEnvelopeId: z.string().describe('The template ID from the templates list (e.g. 1).'),
   recipientEmail: ZRecipientEmailSchema.describe('Email address of the signing recipient.'),
   recipientName: z.string().max(255).optional().describe('Name of the signing recipient.'),
   title: z.string().min(1).max(255).optional().describe('Title for the created document.'),

@@ -558,7 +558,6 @@ export const ZTemplateMetaSchema = z.object({
 
 export const ZTemplateSchema = z.object({
   id: z.number(),
-  envelopeId: z.string().optional(),
   externalId: z.string().nullish(),
   type: z.nativeEnum(TemplateType),
   title: z.string(),
