@@ -91,6 +91,11 @@ export function buildTemplateAuthoringLink(presignToken: string): string {
   return `${baseUrl}/embed/v1/authoring/template/create?token=${encodeURIComponent(presignToken)}`;
 }
 
+export function buildTemplateEditAuthoringLink(id: number, presignToken: string): string {
+  const baseUrl = getDocumensoUrl();
+  return `${baseUrl}/embed/v1/authoring/template/edit/${id}?token=${encodeURIComponent(presignToken)}`;
+}
+
 export type CreateEnvelopeRequest = {
   recipientEmail: string;
   recipientName?: string;
@@ -108,6 +113,35 @@ export type CreateEnvelopeResponse = {
   signingUrl: string;
   signingToken: string;
 };
+
+export type CreateTemplateResponse = {
+  envelopeId: string;
+  id: number;
+};
+
+export async function createTemplate(
+  apiKey: string,
+  formData: FormData,
+): Promise<CreateTemplateResponse> {
+  const baseUrl = getDocumensoUrl();
+  const url = `${baseUrl}/api/v2-beta/template/create`;
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Documenso create-template failed (${res.status}): ${text.slice(0, 300)}`);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return res.json() as Promise<CreateTemplateResponse>;
+}
 
 export async function createEnvelope(
   apiKey: string,

@@ -88,6 +88,38 @@ List completed templates for the team. Proxies to Documenso's templates API.
 }
 ```
 
+### `POST /api/template/create`
+
+Creates a template by uploading a PDF. The template is stored with the team associated with the API key.
+
+**Authentication:** `Authorization: Bearer <TOKEN_EXCHANGE_SECRET>` or `X-API-Key: <TOKEN_EXCHANGE_SECRET>`
+
+**Documenso API key:** `X-Documenso-API-Key` header or `apiKey` query param (required)
+
+**Request:** `multipart/form-data`
+
+- `file` – **Required.** PDF file.
+- `name` – Optional. Template name/title. Defaults to the filename (without `.pdf`).
+- `expiresIn` – Optional. Authoring link expiry in minutes (default 60, max 10080).
+
+**Success (200):**
+
+```json
+{
+  "id": 1,
+  "authoringLink": "https://sign.pinogy.com/embed/v1/authoring/template/edit/1?token=...",
+  "expiresAt": "2025-02-16T...",
+  "expiresIn": 3600
+}
+```
+
+- `id` – The template ID. Use this with `GET /api/templates` and `POST /api/template/{id}/create-envelope`.
+- `authoringLink` – Link to add recipients and fields in the Documenso embed authoring UI. Expires per `expiresIn`.
+- `expiresAt` – When the authoring link expires (ISO 8601).
+- `expiresIn` – Authoring link validity in seconds.
+
+**Note:** The created template has no recipients or fields. Use `authoringLink` to add them, or open the main app.
+
 ### `POST /api/template/{templateId}/create-envelope`
 
 Creates a document envelope from a template and distributes it to a single recipient. Returns the envelope ID and signing URL.

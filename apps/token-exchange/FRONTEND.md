@@ -6,7 +6,7 @@ Quick reference for integrating the token-exchange API from a web or mobile fron
 
 | Service | Base URL | Use for |
 |----------|----------|---------|
-| **Token Exchange** | `https://sign-token.pinogy.com` | Exchange, templates, create-envelope |
+| **Token Exchange** | `https://sign-token.pinogy.com` | Exchange, templates, create template, create-envelope |
 | **Documenso (signing)** | `https://sign.pinogy.com` | Signing links, main app UI |
 
 **Important:** Templates and create-envelope live on the **token-exchange** URL, not the main app.
@@ -90,7 +90,44 @@ Use `id` from each template for create-envelope.
 
 ---
 
-### 3. Create envelope from template
+### 3. Create template (upload PDF)
+
+```
+POST /api/template/create
+```
+
+**Headers:**
+- `Authorization: Bearer <TOKEN_EXCHANGE_SECRET>` (or `X-API-Key`)
+- `X-Documenso-API-Key: <apiKey>` (or pass `apiKey` in query)
+- `Content-Type: multipart/form-data` (set automatically when sending FormData)
+
+**Body (FormData):**
+- `file` – **Required.** PDF file.
+- `name` – Optional. Template name. Defaults to filename without `.pdf`.
+- `expiresIn` – Optional. Authoring link expiry in minutes (default 60, max 10080).
+
+**Success (200):**
+```json
+{
+  "id": 1,
+  "authoringLink": "https://sign.pinogy.com/embed/v1/authoring/template/edit/1?token=...",
+  "expiresAt": "2025-02-16T...",
+  "expiresIn": 3600
+}
+```
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | number | Template ID. Use for create-envelope and templates list. |
+| `authoringLink` | string | Link to add recipients and fields in the embed authoring UI. Expires per `expiresIn`. |
+| `expiresAt` | string | ISO 8601 timestamp when the authoring link expires. |
+| `expiresIn` | number | Authoring link validity in seconds. |
+
+Use `id` for create-envelope. Open `authoringLink` to add recipients and fields (link expires per `expiresIn`).
+
+---
+
+### 4. Create envelope from template
 
 ```
 POST /api/template/{templateId}/create-envelope
@@ -144,7 +181,7 @@ POST /api/template/{templateId}/create-envelope
 
 ---
 
-### 4. Document request (template authoring link)
+### 5. Document request (template authoring link)
 
 ```
 POST /api/document-request
@@ -223,8 +260,24 @@ const templatesRes = await fetch(
 );
 const { templates } = await templatesRes.json();
 
-// 3. Create envelope from template
-const templateId = templates[0].id;
+// 3. (Optional) Create template by uploading a PDF
+const formData = new FormData();
+formData.append('file', pdfFile);  // File object
+formData.append('name', 'My Contract');
+formData.append('expiresIn', '60');  // minutes
+const createTemplateRes = await fetch(`${TOKEN_EXCHANGE_URL}/api/template/create`, {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${TOKEN_EXCHANGE_SECRET}`,
+    'X-Documenso-API-Key': apiKey,
+  },
+  body: formData,
+});
+const { id: newTemplateId, authoringLink } = await createTemplateRes.json();
+// Open authoringLink to add recipients/fields. Use newTemplateId for create-envelope once configured.
+
+// 4. Create envelope from template (use newTemplateId from step 3, or templates[0].id from step 2)
+const templateId = newTemplateId ?? templates[0]?.id;
 const createRes = await fetch(
   `${TOKEN_EXCHANGE_URL}/api/template/${templateId}/create-envelope`,
   {

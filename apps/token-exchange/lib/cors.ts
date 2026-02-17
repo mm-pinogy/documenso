@@ -21,7 +21,7 @@ interface CorsOptions {
 const defaultOptions: CorsOptions = {
   origin: '*',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-  allowedHeaders: 'Content-Type, Authorization, X-API-Key',
+  allowedHeaders: 'Content-Type, Authorization, X-API-Key, X-Documenso-API-Key',
   preflightContinue: false,
   optionsSuccessStatus: 204,
 };
