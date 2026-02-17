@@ -7,8 +7,9 @@
 #   - Artifact Registry API enabled (gcloud services enable artifactregistry.googleapis.com)
 #
 # Usage:
-#   ./scripts/build-and-push-gke.sh [tag]                    # build and push both
+#   ./scripts/build-and-push-gke.sh [tag]                     # build and push both
 #   ./scripts/build-and-push-gke.sh [tag] --app-only         # build and push documenso-app only
+#   ./scripts/build-and-push-gke.sh [tag] --exchange-only    # build and push token-exchange only
 #   ./scripts/build-and-push-gke.sh [tag] --push-only        # push only (skip build)
 #
 # Environment variables (optional):
@@ -28,10 +29,12 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 PUSH_ONLY=false
 APP_ONLY=false
+EXCHANGE_ONLY=false
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --push-only) PUSH_ONLY=true; shift ;;
-    --app-only)  APP_ONLY=true; shift ;;
+    --push-only)      PUSH_ONLY=true; shift ;;
+    --app-only)       APP_ONLY=true; shift ;;
+    --exchange-only)  EXCHANGE_ONLY=true; shift ;;
     *) break ;;
   esac
 done
@@ -79,15 +82,17 @@ echo "==> Configuring Docker for Artifact Registry..."
 gcloud auth configure-docker "${GCP_REGION}-docker.pkg.dev" --quiet
 
 if [[ "$PUSH_ONLY" != true ]]; then
-  # Build documenso-app (main Remix app)
-  echo ""
-  echo "==> Building documenso-app..."
-  docker build \
-    -t "$DOCUMENSO_APP_IMAGE" \
-    -f "$REPO_ROOT/docker/Dockerfile" \
-    "$REPO_ROOT"
+  if [[ "$EXCHANGE_ONLY" != true ]]; then
+    # Build documenso-app (main Remix app)
+    echo ""
+    echo "==> Building documenso-app..."
+    docker build \
+      -t "$DOCUMENSO_APP_IMAGE" \
+      -f "$REPO_ROOT/docker/Dockerfile" \
+      "$REPO_ROOT"
+  fi
 
-  if [[ "$APP_ONLY" != true ]]; then
+  if [[ "$APP_ONLY" != true || "$EXCHANGE_ONLY" == true ]]; then
     # Build token-exchange
     echo ""
     echo "==> Building token-exchange..."
@@ -101,22 +106,28 @@ fi
 # Push images
 echo ""
 echo "==> Pushing images..."
-docker push "$DOCUMENSO_APP_IMAGE"
-if [[ "$APP_ONLY" != true ]]; then
+if [[ "$EXCHANGE_ONLY" != true ]]; then
+  docker push "$DOCUMENSO_APP_IMAGE"
+fi
+if [[ "$APP_ONLY" != true || "$EXCHANGE_ONLY" == true ]]; then
   docker push "$TOKEN_EXCHANGE_IMAGE"
 fi
 
 echo ""
 echo "==> Done! Images pushed:"
-echo "    documenso-app:  ${DOCUMENSO_APP_IMAGE}"
-if [[ "$APP_ONLY" != true ]]; then
+if [[ "$EXCHANGE_ONLY" != true ]]; then
+  echo "    documenso-app:  ${DOCUMENSO_APP_IMAGE}"
+fi
+if [[ "$APP_ONLY" != true || "$EXCHANGE_ONLY" == true ]]; then
   echo "    token-exchange: ${TOKEN_EXCHANGE_IMAGE}"
 fi
 echo ""
-echo "==> Deploy documenso-app:"
-echo "    kubectl set image deployment/documenso-app documenso-app=${DOCUMENSO_APP_IMAGE} -n sign"
-echo "    # or: kubectl apply -f k8s/sign/documenso-app.yaml -n sign"
-if [[ "$APP_ONLY" != true ]]; then
+if [[ "$EXCHANGE_ONLY" != true ]]; then
+  echo "==> Deploy documenso-app:"
+  echo "    kubectl set image deployment/documenso-app documenso-app=${DOCUMENSO_APP_IMAGE} -n sign"
+  echo "    # or: kubectl apply -f k8s/sign/documenso-app.yaml -n sign"
+fi
+if [[ "$APP_ONLY" != true || "$EXCHANGE_ONLY" == true ]]; then
   echo ""
   echo "==> Deploy token-exchange:"
   echo "    kubectl set image deployment/token-exchange token-exchange=${TOKEN_EXCHANGE_IMAGE} -n sign"

@@ -33,7 +33,7 @@ on:
         default: false
         type: boolean
       deploy:
-        description: 'Deploy to GKE after build (requires GKE_CLUSTER, GKE_ZONE secrets)'
+        description: 'Deploy to GKE after build (requires GKE_CLUSTER, GKE_ZONE). Must check this for cluster to receive new images!'
         required: false
         default: false
         type: boolean
