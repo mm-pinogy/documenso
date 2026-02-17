@@ -5,7 +5,8 @@ A separate service that exchanges third-party credentials for Documenso team API
 **Main app:** https://sign.pinogy.com  
 **Token Exchange:** https://sign-token.pinogy.com (or deploy as a separate Render service with a custom domain)
 
-> **Architecture:** All integration logic lives in this app. Do not modify the main Documenso app. See [ARCHITECTURE.md](./ARCHITECTURE.md).
+> **Architecture:** All integration logic lives in this app. Do not modify the main Documenso app. See [ARCHITECTURE.md](./ARCHITECTURE.md).  
+> **Frontend:** See [FRONTEND.md](./FRONTEND.md) for a concise API reference for frontend integration.
 
 ## Flow
 

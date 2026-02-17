@@ -54,6 +54,8 @@ Set these in the **Environment** section of each service. Use `https://sign.pino
 | Key | Value |
 |-----|--------|
 | `TOKEN_EXCHANGE_SECRET` | Generate with `openssl rand -base64 32` |
+| `NEXT_PUBLIC_WEBAPP_URL` | `https://sign.pinogy.com` – main app URL (required for correct signing links) |
+| `DOCUMENSO_URL` | `https://sign.pinogy.com` – main app URL (for templates, document-request) |
 | `NEXT_PRIVATE_DATABASE_URL` | *(auto from Blueprint)* |
 | `NEXT_PRIVATE_DIRECT_DATABASE_URL` | *(auto from Blueprint)* |
 
@@ -99,7 +101,7 @@ npm run promote:admin your@email.com
 1. Select the **token-exchange** service.
 2. **Settings** → **Custom Domains** → **Add Custom Domain**.
 3. Enter `sign-token.pinogy.com` and add the CNAME or A record they show.
-4. No environment changes needed for the token-exchange service.
+4. In **Environment**, set `NEXT_PUBLIC_WEBAPP_URL` and `DOCUMENSO_URL` to `https://sign.pinogy.com` so signing links point to the main app.
 5. Use `https://sign-token.pinogy.com/api/exchange` in your Flutter app (see `apps/token-exchange/README.md`).
 
 ## 5. Using a Manual Setup Instead of Blueprint
@@ -123,10 +125,12 @@ If you prefer not to use the Blueprint:
    - Build: `npm ci && npm run build --filter=@documenso/token-exchange`
    - Start: `cd apps/token-exchange && npm run start`
    - Same database URLs as the main app.
+   - `NEXT_PUBLIC_WEBAPP_URL` and `DOCUMENSO_URL` → main app URL (e.g. `https://sign.pinogy.com`) for correct signing links.
 
 ## 6. Troubleshooting
 
 - **"Something went wrong" on login**: See [docs/TROUBLESHOOTING-LOGIN.md](docs/TROUBLESHOOTING-LOGIN.md). Most often caused by `NEXTAUTH_URL` / `NEXT_PUBLIC_WEBAPP_URL` not matching your custom domain (e.g. set both to `https://sign.pinogy.com`).
+- **Documents stuck in pending** (recipients can't sign): See [docs/TROUBLESHOOTING-PENDING-DOCUMENTS.md](docs/TROUBLESHOOTING-PENDING-DOCUMENTS.md). Common after moving from Render to GKE when URL env vars are wrong.
 - **Build fails**: Ensure **Build Command** is exactly `npm ci && npm run build` and **Root Directory** is empty.
 - **Migrations fail**: Confirm the database is running and the URL is the **Internal Database URL** (not external) for the same region.
 - **502 / app not starting**: Check the **Logs** tab. Ensure all required env vars are set, especially `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and both database URLs.

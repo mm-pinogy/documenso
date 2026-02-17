@@ -3,8 +3,8 @@
 # Apply: kubectl apply -f k8s/sign/token-exchange.yaml -n sign
 #
 # Prerequisites:
-# - Create Secret "token-exchange-secrets" with TOKEN_EXCHANGE_SECRET, NEXT_PRIVATE_DATABASE_URL,
-#   NEXT_PRIVATE_DIRECT_DATABASE_URL, DOCUMENSO_URL (for document-request/templates)
+# - Create Secret "token-exchange-secrets" with TOKEN_EXCHANGE_SECRET, NEXT_PUBLIC_WEBAPP_URL,
+#   NEXT_PRIVATE_DATABASE_URL, NEXT_PRIVATE_DIRECT_DATABASE_URL, DOCUMENSO_URL
 # - Or use the same documenso-secrets if both apps share the same DB credentials
 # - Update image to your Artifact Registry path after building
 

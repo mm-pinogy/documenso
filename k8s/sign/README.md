@@ -57,7 +57,7 @@ kubectl create secret generic documenso-secrets \
   --from-literal=NEXTAUTH_SECRET='...' \
   --from-literal=NEXTAUTH_URL='https://sign.pinogy.com' \
   --from-literal=NEXT_PUBLIC_WEBAPP_URL='https://sign.pinogy.com' \
-  --from-literal=NEXT_PRIVATE_INTERNAL_WEBAPP_URL='https://sign.pinogy.com' \
+  --from-literal=NEXT_PRIVATE_INTERNAL_WEBAPP_URL='http://documenso-app' \
   --from-literal=NEXT_PRIVATE_DATABASE_URL='postgresql://...' \
   --from-literal=NEXT_PRIVATE_DIRECT_DATABASE_URL='postgresql://...' \
   --from-literal=NEXT_PRIVATE_ENCRYPTION_KEY='...' \
@@ -65,9 +65,10 @@ kubectl create secret generic documenso-secrets \
   -n sign
 # Add SMTP and other vars from DEPLOY.md
 
-# token-exchange
+# token-exchange (NEXT_PUBLIC_WEBAPP_URL required for correct signing URLs)
 kubectl create secret generic token-exchange-secrets \
   --from-literal=TOKEN_EXCHANGE_SECRET='...' \
+  --from-literal=NEXT_PUBLIC_WEBAPP_URL='https://sign.pinogy.com' \
   --from-literal=NEXT_PRIVATE_DATABASE_URL='postgresql://...' \
   --from-literal=NEXT_PRIVATE_DIRECT_DATABASE_URL='postgresql://...' \
   --from-literal=DOCUMENSO_URL='https://sign.pinogy.com' \
@@ -80,6 +81,8 @@ Or from env files:
 kubectl create secret generic documenso-secrets --from-env-file=.env.production -n sign
 kubectl create secret generic token-exchange-secrets --from-env-file=.env.token-exchange -n sign
 ```
+
+**Note:** `NEXT_PRIVATE_INTERNAL_WEBAPP_URL` must be the internal K8s service URL (`http://documenso-app`) so the seal job can reach the app. Using the external URL can cause documents to stay PENDING after signing. See [docs/TROUBLESHOOTING-PENDING-DOCUMENTS.md](../../docs/TROUBLESHOOTING-PENDING-DOCUMENTS.md).
 
 ### 3. Update image references
 
