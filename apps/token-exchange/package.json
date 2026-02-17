@@ -10,7 +10,6 @@
     "clean": "rimraf .next && rimraf node_modules"
   },
   "dependencies": {
-    "@documenso/ee": "*",
     "@documenso/lib": "*",
     "@documenso/prisma": "*",
     "@sindresorhus/slugify": "^3.0.0",

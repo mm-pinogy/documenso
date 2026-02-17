@@ -12,8 +12,8 @@
 
 ## How token-exchange works
 
-1. **Wraps the Documenso API** – Proxies requests to Documenso (e.g. templates) when the API already supports what we need.
-2. **Implements logic locally** – Uses `@documenso/prisma` and `@documenso/lib` when we need behavior that Documenso’s API doesn’t expose.
+1. **Wraps the Documenso API** – Proxies requests to Documenso (e.g. templates, create-envelope) when the API already supports what we need.
+2. **Talks to the database** – Uses `@documenso/prisma` and `@documenso/lib` when we need behavior that Documenso’s API doesn’t expose.
 ## Where to write code
 
 | Need | Write in |

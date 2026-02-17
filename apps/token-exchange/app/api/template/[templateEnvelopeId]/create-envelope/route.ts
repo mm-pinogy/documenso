@@ -1,9 +1,7 @@
 import type { NextRequest } from 'next/server';
 
 import cors from '@/lib/cors';
-import { createEnvelopeFromTemplate } from '@/lib/server/create-envelope';
-
-import { AppError, AppErrorCode } from '@documenso/lib/errors/app-error';
+import { createEnvelope } from '@/lib/documenso-client';
 
 function getAuthHeader(req: NextRequest): string | null {
   const auth = req.headers.get('Authorization');
@@ -122,14 +120,11 @@ export async function POST(
       : undefined;
 
   try {
-    const result = await createEnvelopeFromTemplate({
-      apiKey,
-      templateEnvelopeId,
+    const result = await createEnvelope(apiKey, templateEnvelopeId, {
       recipientEmail: recipientEmail.trim(),
       recipientName: typeof recipientName === 'string' ? recipientName : undefined,
       title: typeof title === 'string' ? title : undefined,
       prefillFields: Array.isArray(prefillFields) ? prefillFields : undefined,
-      request,
     });
 
     return cors(
@@ -140,26 +135,15 @@ export async function POST(
       }),
     );
   } catch (err) {
-    const error = AppError.parseError(err);
-    const message = error.message;
-    const status =
-      error.code === AppErrorCode.UNAUTHORIZED
-        ? 401
-        : error.code === AppErrorCode.INVALID_BODY ||
-            error.code === AppErrorCode.INVALID_REQUEST ||
-            error.code === AppErrorCode.LIMIT_EXCEEDED
-          ? 400
-          : error.code === AppErrorCode.NOT_FOUND
-            ? 404
-            : 502;
+    const message = err instanceof Error ? err.message : 'Unknown error';
     return cors(
       request,
       new Response(
         JSON.stringify({
           error: message,
-          code: error.code,
+          code: 'DOCUMENSO_API_ERROR',
         }),
-        { status, headers: { 'Content-Type': 'application/json' } },
+        { status: 502, headers: { 'Content-Type': 'application/json' } },
       ),
     );
   }
