@@ -82,8 +82,12 @@ export const getEnvelopeById = async ({ id, userId, teamId, type }: GetEnvelopeB
   });
 
   if (!envelope) {
+    const hint =
+      id.type === 'templateId'
+        ? ` Template ${id.id} may not exist or the API key may not have access to it. Use an id from GET /api/templates.`
+        : '';
     throw new AppError(AppErrorCode.NOT_FOUND, {
-      message: 'Envelope could not be found',
+      message: `Envelope could not be found.${hint}`,
     });
   }
 

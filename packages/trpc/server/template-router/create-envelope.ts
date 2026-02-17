@@ -86,6 +86,7 @@ export const createEnvelopeRoute = authenticatedProcedure
       },
       userId: user.id,
       teamId,
+      sendEmail: false,
       requestMetadata: ctx.metadata,
     }).catch((err) => {
       console.error(err);
