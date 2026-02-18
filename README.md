@@ -40,6 +40,10 @@ Signing documents digitally should be fast and easy and should be the best pract
 
 Join us in creating the next generation of open trust infrastructure.
 
+## Fork Notice
+
+This is a modified version of [Documenso](https://github.com/documenso/documenso), an open-source document signing platform. Modified by [mm-pinogy](https://github.com/mm-pinogy) for custom use cases including token exchange integration. Licensed under GNU AGPL v3. See [LICENSE](./LICENSE).
+
 ## Recognition
 
 <p align="center">

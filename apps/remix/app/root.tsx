@@ -22,6 +22,7 @@ import { TooltipProvider } from '@documenso/ui/primitives/tooltip';
 
 import type { Route } from './+types/root';
 import stylesheet from './app.css?url';
+import { AppFooter } from './components/general/app-footer';
 import { GenericErrorLayout } from './components/general/generic-error-layout';
 import { langCookie } from './storage/lang-cookie.server';
 import { themeSessionResolver } from './storage/theme-session.server';
@@ -141,8 +142,10 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
         <SessionProvider initialSession={session}>
           <TooltipProvider>
             <TrpcProvider>
-              {children}
-
+              <div className="flex min-h-screen flex-col">
+                {children}
+                <AppFooter />
+              </div>
               <Toaster />
             </TrpcProvider>
           </TooltipProvider>
