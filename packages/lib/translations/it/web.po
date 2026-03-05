@@ -2121,6 +2121,10 @@ msgstr "Codici di Backup"
 msgid "Banner Updated"
 msgstr "Banner Aggiornato"
 
+#: apps/remix/app/components/general/app-footer.tsx
+msgid "Based on"
+msgstr ""
+
 #: packages/email/template-components/template-confirmation-email.tsx
 msgid "Before you get started, please confirm your email address by clicking the button below:"
 msgstr "Prima di iniziare, conferma il tuo indirizzo email facendo clic sul pulsante qui sotto:"
@@ -5900,6 +5904,10 @@ msgstr "Pagamento della licenza in ritardo - Per favore aggiorna il tuo pagament
 msgid "License synced"
 msgstr "Licenza sincronizzata"
 
+#: apps/remix/app/components/general/app-footer.tsx
+msgid "Licensed under"
+msgstr ""
+
 #: apps/remix/app/components/general/app-command-menu.tsx
 msgid "Light Mode"
 msgstr "Modalità chiara"
@@ -8976,6 +8984,10 @@ msgstr "Siamo spiacenti, non siamo riusciti a scaricare il certificato. Riprova 
 #: apps/remix/app/components/tables/team-members-table.tsx
 msgid "Source"
 msgstr "Fonte"
+
+#: apps/remix/app/components/general/app-footer.tsx
+msgid "Source code"
+msgstr ""
 
 #: apps/remix/app/routes/_authenticated+/o.$orgUrl.settings.sso.tsx
 msgid "Space-separated list of domains. Leave empty to allow all domains."
@@ -12794,4 +12806,3 @@ msgstr "Il tuo codice di verifica:"
 #: apps/remix/app/routes/_authenticated+/o.$orgUrl.settings.sso.tsx
 msgid "your-domain.com another-domain.com"
 msgstr "tuo-dominio.com altro-dominio.com"
-

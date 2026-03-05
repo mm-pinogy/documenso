@@ -2121,6 +2121,10 @@ msgstr "Back‑upcodes"
 msgid "Banner Updated"
 msgstr "Banner bijgewerkt"
 
+#: apps/remix/app/components/general/app-footer.tsx
+msgid "Based on"
+msgstr ""
+
 #: packages/email/template-components/template-confirmation-email.tsx
 msgid "Before you get started, please confirm your email address by clicking the button below:"
 msgstr "Bevestig je e-mailadres door op de onderstaande knop te klikken voordat je begint:"
@@ -5900,6 +5904,10 @@ msgstr "Licentiebetaling achterstallig - Werk je betaling bij om onderbrekingen 
 msgid "License synced"
 msgstr "Licentie gesynchroniseerd"
 
+#: apps/remix/app/components/general/app-footer.tsx
+msgid "Licensed under"
+msgstr ""
+
 #: apps/remix/app/components/general/app-command-menu.tsx
 msgid "Light Mode"
 msgstr "Lichte modus"
@@ -8976,6 +8984,10 @@ msgstr "We konden het certificaat niet downloaden. Probeer het later opnieuw."
 #: apps/remix/app/components/tables/team-members-table.tsx
 msgid "Source"
 msgstr "Bron"
+
+#: apps/remix/app/components/general/app-footer.tsx
+msgid "Source code"
+msgstr ""
 
 #: apps/remix/app/routes/_authenticated+/o.$orgUrl.settings.sso.tsx
 msgid "Space-separated list of domains. Leave empty to allow all domains."
@@ -12794,4 +12806,3 @@ msgstr "Uw verificatiecode:"
 #: apps/remix/app/routes/_authenticated+/o.$orgUrl.settings.sso.tsx
 msgid "your-domain.com another-domain.com"
 msgstr "your-domain.com another-domain.com"
-
