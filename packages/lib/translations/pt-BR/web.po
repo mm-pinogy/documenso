@@ -279,6 +279,22 @@ msgstr "{0} em nome de \"{1}\" convidou você para {recipientActionVerb} o docum
 msgid "{0} Teams"
 msgstr "{0} Equipes"
 
+#: packages/ui/components/document/expiration-period-picker.tsx
+msgid "{amount, plural, one {Day} other {Days}}"
+msgstr ""
+
+#: packages/ui/components/document/expiration-period-picker.tsx
+msgid "{amount, plural, one {Month} other {Months}}"
+msgstr ""
+
+#: packages/ui/components/document/expiration-period-picker.tsx
+msgid "{amount, plural, one {Week} other {Weeks}}"
+msgstr ""
+
+#: packages/ui/components/document/expiration-period-picker.tsx
+msgid "{amount, plural, one {Year} other {Years}}"
+msgstr ""
+
 #: apps/remix/app/components/tables/internal-audit-log-table.tsx
 #: packages/lib/server-only/pdf/render-audit-logs.ts
 msgid "{browserInfo} on {os}"
@@ -1097,6 +1113,7 @@ msgstr "Ativo"
 
 #: apps/remix/app/components/general/admin-license-card.tsx
 #: apps/remix/app/components/tables/user-billing-organisations-table.tsx
+#: packages/lib/constants/billing.ts
 msgctxt "Subscription status"
 msgid "Active"
 msgstr "Ativo"
@@ -2098,6 +2115,10 @@ msgstr "Códigos de backup"
 #: apps/remix/app/routes/_authenticated+/admin+/site-settings.tsx
 msgid "Banner Updated"
 msgstr "Banner Atualizado"
+
+#: apps/remix/app/components/general/app-footer.tsx
+msgid "Based on"
+msgstr ""
 
 #: packages/email/template-components/template-confirmation-email.tsx
 msgid "Before you get started, please confirm your email address by clicking the button below:"
@@ -3201,10 +3222,6 @@ msgstr "Configurações de Data"
 msgid "David is the Employee, Lucas is the Manager"
 msgstr "David é o Funcionário, Lucas é o Gerente"
 
-#: packages/ui/components/document/expiration-period-picker.tsx
-msgid "Days"
-msgstr ""
-
 #: apps/remix/app/components/general/organisations/organisation-invitations.tsx
 #: apps/remix/app/routes/_unauthenticated+/organisation.sso.confirmation.$token.tsx
 #: packages/email/templates/organisation-invite.tsx
@@ -4205,10 +4222,12 @@ msgstr "Valores duplicados não são permitidos"
 msgid "Dutch"
 msgstr ""
 
+#: apps/remix/app/components/forms/editor/editor-field-number-form.tsx
 #: packages/ui/primitives/document-flow/field-items-advanced-settings/number-field.tsx
 msgid "E.g. 0"
 msgstr "Ex: 0"
 
+#: apps/remix/app/components/forms/editor/editor-field-number-form.tsx
 #: packages/ui/primitives/document-flow/field-items-advanced-settings/number-field.tsx
 msgid "E.g. 100"
 msgstr "Ex: 100"
@@ -5477,6 +5496,7 @@ msgid "Important: What This Means"
 msgstr "Importante: O que isso significa"
 
 #: apps/remix/app/components/tables/user-billing-organisations-table.tsx
+#: packages/lib/constants/billing.ts
 msgctxt "Subscription status"
 msgid "Inactive"
 msgstr "Inativo"
@@ -5879,6 +5899,10 @@ msgstr ""
 msgid "License synced"
 msgstr ""
 
+#: apps/remix/app/components/general/app-footer.tsx
+msgid "Licensed under"
+msgstr ""
+
 #: apps/remix/app/components/general/app-command-menu.tsx
 msgid "Light Mode"
 msgstr "Modo Claro"
@@ -6266,10 +6290,6 @@ msgstr "Usuários Ativos Mensais: Usuários que criaram pelo menos um Documento"
 #: apps/remix/app/routes/_authenticated+/admin+/stats.tsx
 msgid "Monthly Active Users: Users that had at least one of their documents completed"
 msgstr "Usuários Ativos Mensais: Usuários que tiveram pelo menos um de seus documentos concluídos"
-
-#: packages/ui/components/document/expiration-period-picker.tsx
-msgid "Months"
-msgstr ""
 
 #: apps/remix/app/components/dialogs/document-move-to-folder-dialog.tsx
 #: apps/remix/app/components/dialogs/envelopes-bulk-move-dialog.tsx
@@ -7020,6 +7040,7 @@ msgstr "Senha atualizada!"
 
 #: apps/remix/app/components/general/admin-license-card.tsx
 #: apps/remix/app/components/tables/user-billing-organisations-table.tsx
+#: packages/lib/constants/billing.ts
 msgctxt "Subscription status"
 msgid "Past Due"
 msgstr "Vencido"
@@ -8958,6 +8979,10 @@ msgstr "Desculpe, não conseguimos baixar o certificado. Por favor, tente novame
 #: apps/remix/app/components/tables/team-members-table.tsx
 msgid "Source"
 msgstr "Fonte"
+
+#: apps/remix/app/components/general/app-footer.tsx
+msgid "Source code"
+msgstr ""
 
 #: apps/remix/app/routes/_authenticated+/o.$orgUrl.settings.sso.tsx
 msgid "Space-separated list of domains. Leave empty to allow all domains."
@@ -11645,10 +11670,6 @@ msgstr "URL do Webhook"
 msgid "Webhooks"
 msgstr "Webhooks"
 
-#: packages/ui/components/document/expiration-period-picker.tsx
-msgid "Weeks"
-msgstr ""
-
 #: apps/remix/app/routes/_unauthenticated+/articles.signature-disclosure.tsx
 msgid "Welcome"
 msgstr "Bem-vindo"
@@ -11733,10 +11754,6 @@ msgstr "Escreva uma descrição para exibir em seu perfil público"
 #: apps/remix/app/components/general/billing-plans.tsx
 msgid "Yearly"
 msgstr "Anual"
-
-#: packages/ui/components/document/expiration-period-picker.tsx
-msgid "Years"
-msgstr ""
 
 #: apps/remix/app/components/forms/branding-preferences-form.tsx
 #: apps/remix/app/components/forms/document-preferences-form.tsx

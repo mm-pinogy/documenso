@@ -2121,6 +2121,10 @@ msgstr "备份代码"
 msgid "Banner Updated"
 msgstr "横幅已更新"
 
+#: apps/remix/app/components/general/app-footer.tsx
+msgid "Based on"
+msgstr ""
+
 #: packages/email/template-components/template-confirmation-email.tsx
 msgid "Before you get started, please confirm your email address by clicking the button below:"
 msgstr "在开始之前，请点击下方按钮确认您的邮箱地址："
@@ -5900,6 +5904,10 @@ msgstr "许可证付款逾期 - 请更新您的付款信息以避免服务中断
 msgid "License synced"
 msgstr "许可证已同步"
 
+#: apps/remix/app/components/general/app-footer.tsx
+msgid "Licensed under"
+msgstr ""
+
 #: apps/remix/app/components/general/app-command-menu.tsx
 msgid "Light Mode"
 msgstr "浅色模式"
@@ -8976,6 +8984,10 @@ msgstr "抱歉，我们未能下载证书。请稍后再试。"
 #: apps/remix/app/components/tables/team-members-table.tsx
 msgid "Source"
 msgstr "来源"
+
+#: apps/remix/app/components/general/app-footer.tsx
+msgid "Source code"
+msgstr ""
 
 #: apps/remix/app/routes/_authenticated+/o.$orgUrl.settings.sso.tsx
 msgid "Space-separated list of domains. Leave empty to allow all domains."
@@ -12794,4 +12806,3 @@ msgstr "您的验证码："
 #: apps/remix/app/routes/_authenticated+/o.$orgUrl.settings.sso.tsx
 msgid "your-domain.com another-domain.com"
 msgstr "your-domain.com another-domain.com"
-

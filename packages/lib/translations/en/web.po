@@ -279,6 +279,22 @@ msgstr "{0} on behalf of \"{1}\" has invited you to {recipientActionVerb} the do
 msgid "{0} Teams"
 msgstr "{0} Teams"
 
+#: packages/ui/components/document/expiration-period-picker.tsx
+msgid "{amount, plural, one {Day} other {Days}}"
+msgstr "{amount, plural, one {Day} other {Days}}"
+
+#: packages/ui/components/document/expiration-period-picker.tsx
+msgid "{amount, plural, one {Month} other {Months}}"
+msgstr "{amount, plural, one {Month} other {Months}}"
+
+#: packages/ui/components/document/expiration-period-picker.tsx
+msgid "{amount, plural, one {Week} other {Weeks}}"
+msgstr "{amount, plural, one {Week} other {Weeks}}"
+
+#: packages/ui/components/document/expiration-period-picker.tsx
+msgid "{amount, plural, one {Year} other {Years}}"
+msgstr "{amount, plural, one {Year} other {Years}}"
+
 #: apps/remix/app/components/tables/internal-audit-log-table.tsx
 #: packages/lib/server-only/pdf/render-audit-logs.ts
 msgid "{browserInfo} on {os}"
@@ -1097,6 +1113,7 @@ msgstr "Active"
 
 #: apps/remix/app/components/general/admin-license-card.tsx
 #: apps/remix/app/components/tables/user-billing-organisations-table.tsx
+#: packages/lib/constants/billing.ts
 msgctxt "Subscription status"
 msgid "Active"
 msgstr "Active"
@@ -2098,6 +2115,10 @@ msgstr "Backup codes"
 #: apps/remix/app/routes/_authenticated+/admin+/site-settings.tsx
 msgid "Banner Updated"
 msgstr "Banner Updated"
+
+#: apps/remix/app/components/general/app-footer.tsx
+msgid "Based on"
+msgstr "Based on"
 
 #: packages/email/template-components/template-confirmation-email.tsx
 msgid "Before you get started, please confirm your email address by clicking the button below:"
@@ -3201,10 +3222,6 @@ msgstr "Date Settings"
 msgid "David is the Employee, Lucas is the Manager"
 msgstr "David is the Employee, Lucas is the Manager"
 
-#: packages/ui/components/document/expiration-period-picker.tsx
-msgid "Days"
-msgstr "Days"
-
 #: apps/remix/app/components/general/organisations/organisation-invitations.tsx
 #: apps/remix/app/routes/_unauthenticated+/organisation.sso.confirmation.$token.tsx
 #: packages/email/templates/organisation-invite.tsx
@@ -4205,10 +4222,12 @@ msgstr "Duplicate values are not allowed"
 msgid "Dutch"
 msgstr "Dutch"
 
+#: apps/remix/app/components/forms/editor/editor-field-number-form.tsx
 #: packages/ui/primitives/document-flow/field-items-advanced-settings/number-field.tsx
 msgid "E.g. 0"
 msgstr "E.g. 0"
 
+#: apps/remix/app/components/forms/editor/editor-field-number-form.tsx
 #: packages/ui/primitives/document-flow/field-items-advanced-settings/number-field.tsx
 msgid "E.g. 100"
 msgstr "E.g. 100"
@@ -5477,6 +5496,7 @@ msgid "Important: What This Means"
 msgstr "Important: What This Means"
 
 #: apps/remix/app/components/tables/user-billing-organisations-table.tsx
+#: packages/lib/constants/billing.ts
 msgctxt "Subscription status"
 msgid "Inactive"
 msgstr "Inactive"
@@ -5879,6 +5899,10 @@ msgstr "License Payment Overdue - Please update your payment to avoid service di
 msgid "License synced"
 msgstr "License synced"
 
+#: apps/remix/app/components/general/app-footer.tsx
+msgid "Licensed under"
+msgstr "Licensed under"
+
 #: apps/remix/app/components/general/app-command-menu.tsx
 msgid "Light Mode"
 msgstr "Light Mode"
@@ -6266,10 +6290,6 @@ msgstr "Monthly Active Users: Users that created at least one Document"
 #: apps/remix/app/routes/_authenticated+/admin+/stats.tsx
 msgid "Monthly Active Users: Users that had at least one of their documents completed"
 msgstr "Monthly Active Users: Users that had at least one of their documents completed"
-
-#: packages/ui/components/document/expiration-period-picker.tsx
-msgid "Months"
-msgstr "Months"
 
 #: apps/remix/app/components/dialogs/document-move-to-folder-dialog.tsx
 #: apps/remix/app/components/dialogs/envelopes-bulk-move-dialog.tsx
@@ -7020,6 +7040,7 @@ msgstr "Password updated!"
 
 #: apps/remix/app/components/general/admin-license-card.tsx
 #: apps/remix/app/components/tables/user-billing-organisations-table.tsx
+#: packages/lib/constants/billing.ts
 msgctxt "Subscription status"
 msgid "Past Due"
 msgstr "Past Due"
@@ -8958,6 +8979,10 @@ msgstr "Sorry, we were unable to download the certificate. Please try again late
 #: apps/remix/app/components/tables/team-members-table.tsx
 msgid "Source"
 msgstr "Source"
+
+#: apps/remix/app/components/general/app-footer.tsx
+msgid "Source code"
+msgstr "Source code"
 
 #: apps/remix/app/routes/_authenticated+/o.$orgUrl.settings.sso.tsx
 msgid "Space-separated list of domains. Leave empty to allow all domains."
@@ -11645,10 +11670,6 @@ msgstr "Webhook URL"
 msgid "Webhooks"
 msgstr "Webhooks"
 
-#: packages/ui/components/document/expiration-period-picker.tsx
-msgid "Weeks"
-msgstr "Weeks"
-
 #: apps/remix/app/routes/_unauthenticated+/articles.signature-disclosure.tsx
 msgid "Welcome"
 msgstr "Welcome"
@@ -11733,10 +11754,6 @@ msgstr "Write a description to display on your public profile"
 #: apps/remix/app/components/general/billing-plans.tsx
 msgid "Yearly"
 msgstr "Yearly"
-
-#: packages/ui/components/document/expiration-period-picker.tsx
-msgid "Years"
-msgstr "Years"
 
 #: apps/remix/app/components/forms/branding-preferences-form.tsx
 #: apps/remix/app/components/forms/document-preferences-form.tsx
