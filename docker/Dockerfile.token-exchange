@@ -51,19 +51,21 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nodejs
 
-USER nodejs
-
 WORKDIR /app
 
-COPY --from=builder --chown=nodejs:nodejs /app/out/json/ .
-COPY --from=builder --chown=nodejs:nodejs /app/patches ./patches
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/patches ./patches
 RUN npm ci --only=production
 
-COPY --from=installer --chown=nodejs:nodejs /app/apps/token-exchange ./apps/token-exchange
-COPY --from=installer --chown=nodejs:nodejs /app/packages/prisma/schema.prisma ./packages/prisma/schema.prisma
-COPY --from=installer --chown=nodejs:nodejs /app/packages/prisma/migrations ./packages/prisma/migrations
-COPY --from=installer --chown=nodejs:nodejs /app/packages/lib ./packages/lib
+COPY --from=installer /app/apps/token-exchange ./apps/token-exchange
+COPY --from=installer /app/packages/prisma/schema.prisma ./packages/prisma/schema.prisma
+COPY --from=installer /app/packages/prisma/migrations ./packages/prisma/migrations
+COPY --from=installer /app/packages/lib ./packages/lib
 RUN npx prisma generate --schema ./packages/prisma/schema.prisma
+
+RUN chown -R nodejs:nodejs /app
+
+USER nodejs
 
 WORKDIR /app/apps/token-exchange
 
