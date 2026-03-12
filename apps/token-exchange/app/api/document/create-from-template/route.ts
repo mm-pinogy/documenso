@@ -23,23 +23,22 @@ function getApiKey(req: NextRequest): string | null {
   return url.searchParams.get('apiKey');
 }
 
-/** Default placeholders to add when configuring a template so it's ready to sign. */
+/** Default placeholders to add when configuring a template so it's ready to sign. Date is optional. */
 const DEFAULT_PLACEHOLDER_FIELDS = [
   { placeholder: '{{signature, r1}}', type: 'SIGNATURE' },
-  { placeholder: '{{date, r1}}', type: 'DATE' },
 ] as const;
 
 /**
  * POST /api/document/create-from-template
  *
  * "Authoring logic": ensure the template has a signer and placeholder-based fields, then create
- * an envelope from it. Use when the template PDF has {{signature, r1}}, {{date, r1}}, etc. but
- * the template was never opened in the authoring UI.
+ * an envelope from it. Use when the template PDF has {{signature, r1}} (and optionally
+ * {{date, r1}}, {{initials, r1}}, {{name, r1}}) but the template was never opened in the authoring UI.
  *
  * Auth: Bearer TOKEN_EXCHANGE_SECRET. X-Documenso-API-Key or apiKey query (required).
  * Body (JSON): templateId (number), recipientEmail (string), recipientName?, title?, placeholders?
- *   placeholders: optional array of { placeholder: string, type: string } (e.g. { placeholder: "{{signature, r1}}", type: "SIGNATURE" }).
- *   Defaults to [{{signature, r1}}, {{date, r1}}].
+ *   placeholders: optional array of { placeholder: string, type: string }. Types: SIGNATURE, DATE, INITIALS, NAME, etc.
+ *   Defaults to [{{signature, r1}}]. Add {{date, r1}}, {{initials, r1}}, or {{name, r1}} in placeholders if your PDF has them.
  *
  * Success: { envelopeId, signingUrl, signingToken }
  */
