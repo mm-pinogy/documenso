@@ -77,17 +77,21 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const result =
-    credentials && typeof credentials === 'object' && !Array.isArray(credentials)
-      ? await exchangeCredentials({
-          credentials: credentials as Record<string, unknown>,
-          slug: slug.trim(),
-          organisationId: organisationId.trim(),
-        })
-      : await exchangeTrusted({
-          slug: slug.trim(),
-          organisationId: organisationId.trim(),
-        });
+  // Credential flow is only used when we have a real validator; otherwise use trusted flow.
+  // Trusted flow: auth is TOKEN_EXCHANGE_SECRET; slug + organisationId are enough.
+  const useCredentialFlow =
+    process.env.TOKEN_EXCHANGE_VALIDATE_CREDENTIALS === 'true' && isRecord(credentials);
+
+  const result = useCredentialFlow
+    ? await exchangeCredentials({
+        credentials,
+        slug: slug.trim(),
+        organisationId: organisationId.trim(),
+      })
+    : await exchangeTrusted({
+        slug: slug.trim(),
+        organisationId: organisationId.trim(),
+      });
 
   if (!result.success) {
     const status =
