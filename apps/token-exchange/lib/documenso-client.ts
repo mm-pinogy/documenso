@@ -129,7 +129,7 @@ export async function getTemplate(
   templateId: number,
 ): Promise<GetTemplateByIdResponse> {
   const baseUrl = getDocumensoUrl();
-  const url = `${baseUrl}/api/v2/template/${templateId}`;
+  const url = `${baseUrl}/api/v2-beta/template/${templateId}`;
 
   const res = await fetch(url, {
     method: 'GET',
@@ -213,9 +213,7 @@ export async function createEnvelope(
 
   const template = await getTemplate(apiKey, templateId);
   const recipients = template.recipients ?? [];
-  const firstSigner = recipients.find(
-    (r) => String(r.role).toUpperCase() === 'SIGNER',
-  );
+  const firstSigner = recipients.find((r) => String(r.role).toUpperCase() === 'SIGNER');
 
   if (!firstSigner) {
     throw new Error(
@@ -234,9 +232,10 @@ export async function createEnvelope(
       };
     }),
     prefillFields: body.prefillFields,
+    distributeDocument: true,
   };
 
-  const res = await fetch(`${baseUrl}/api/v2/template/use`, {
+  const res = await fetch(`${baseUrl}/api/v2-beta/template/use`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -265,8 +264,7 @@ export async function createEnvelope(
     throw new Error('Documenso template/use did not return a signing token');
   }
 
-  const envelopeId =
-    doc.envelopeId ?? (doc.id != null ? String(doc.id) : '');
+  const envelopeId = doc.envelopeId ?? (doc.id != null ? String(doc.id) : '');
 
   return {
     envelopeId,
