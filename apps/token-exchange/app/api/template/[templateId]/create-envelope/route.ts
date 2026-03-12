@@ -126,16 +126,29 @@ export async function POST(
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    const isDocumenso = message.includes('Documenso') || message.includes('signer recipient');
+    const isNoSigner =
+      message.includes('signer recipient') || message.includes('at least one signer');
+    const isDocumenso = message.includes('Documenso') || isNoSigner;
+
+    const code = isNoSigner
+      ? 'TEMPLATE_NO_SIGNER'
+      : isDocumenso
+        ? 'DOCUMENSO_API_ERROR'
+        : 'CREATE_ENVELOPE_FAILED';
+    const status = isNoSigner ? 400 : 502;
+    const hint = isNoSigner
+      ? 'Open the template authoring_link (from your backend) and add at least one signer recipient, then retry create-envelope.'
+      : undefined;
 
     return cors(
       request,
       new Response(
         JSON.stringify({
           error: message,
-          code: isDocumenso ? 'DOCUMENSO_API_ERROR' : 'CREATE_ENVELOPE_FAILED',
+          code,
+          ...(hint ? { hint } : {}),
         }),
-        { status: 502, headers: { 'Content-Type': 'application/json' } },
+        { status, headers: { 'Content-Type': 'application/json' } },
       ),
     );
   }

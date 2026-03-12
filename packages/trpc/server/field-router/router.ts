@@ -420,6 +420,24 @@ export const fieldRouter = router({
         },
       });
 
+      const mappedFields = fields.map((field) => {
+        if ('placeholder' in field && typeof field.placeholder === 'string') {
+          return {
+            ...field,
+            placeholder: field.placeholder,
+            width: field.width,
+            height: field.height,
+            matchAll: field.matchAll,
+          };
+        }
+        return {
+          ...field,
+          page: field.pageNumber,
+          positionX: field.pageX,
+          positionY: field.pageY,
+        };
+      });
+
       return await createEnvelopeFields({
         userId: ctx.user.id,
         teamId,
@@ -427,12 +445,7 @@ export const fieldRouter = router({
           type: 'templateId',
           id: templateId,
         },
-        fields: fields.map((field) => ({
-          ...field,
-          page: field.pageNumber,
-          positionX: field.pageX,
-          positionY: field.pageY,
-        })),
+        fields: mappedFields,
         requestMetadata: ctx.metadata,
       });
     }),

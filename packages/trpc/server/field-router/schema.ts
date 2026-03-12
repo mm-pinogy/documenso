@@ -3,6 +3,8 @@ import { z } from 'zod';
 
 import { ZRecipientActionAuthSchema } from '@documenso/lib/types/document-auth';
 import {
+  ZClampedFieldHeightSchema,
+  ZClampedFieldWidthSchema,
   ZFieldHeightSchema,
   ZFieldPageNumberSchema,
   ZFieldPageXSchema,
@@ -22,6 +24,31 @@ const ZCreateFieldSchema = ZFieldAndMetaSchema.and(
     height: ZFieldHeightSchema,
   }),
 );
+
+/** Template field with placeholder positioning (e.g. "{{signature, r1}}"). */
+const ZCreateTemplateFieldPlaceholderSchema = ZFieldAndMetaSchema.and(
+  z.object({
+    recipientId: z.number().describe('The ID of the recipient to create the field for.'),
+    placeholder: z
+      .string()
+      .describe(
+        'Text to search for in the PDF (e.g. "{{signature, r1}}"). The field is placed at this text.',
+      ),
+    width: ZClampedFieldWidthSchema.optional(),
+    height: ZClampedFieldHeightSchema.optional(),
+    matchAll: z
+      .boolean()
+      .optional()
+      .describe(
+        'When true, creates a field at every occurrence of the placeholder. When false or omitted, only the first occurrence is used.',
+      ),
+  }),
+);
+
+const ZCreateTemplateFieldSchema = z.union([
+  ZCreateFieldSchema,
+  ZCreateTemplateFieldPlaceholderSchema,
+]);
 
 const ZUpdateFieldSchema = ZFieldAndMetaSchema.and(
   z.object({
@@ -79,7 +106,7 @@ export const ZCreateTemplateFieldResponseSchema = ZFieldSchema;
 
 export const ZCreateTemplateFieldsRequestSchema = z.object({
   templateId: z.number(),
-  fields: ZCreateFieldSchema.array(),
+  fields: ZCreateTemplateFieldSchema.array(),
 });
 
 export const ZCreateTemplateFieldsResponseSchema = z.object({
