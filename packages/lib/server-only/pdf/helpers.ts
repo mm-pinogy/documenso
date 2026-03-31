@@ -54,23 +54,45 @@ type RecipientPlaceholderInfo = {
 export const parseFieldTypeFromPlaceholder = (fieldTypeString: string): FieldType => {
   const normalizedType = fieldTypeString.toUpperCase().trim();
 
-  return match(normalizedType)
-    .with('SIGNATURE', () => FieldType.SIGNATURE)
-    .with('FREE_SIGNATURE', () => FieldType.FREE_SIGNATURE)
-    .with('INITIALS', () => FieldType.INITIALS)
-    .with('NAME', () => FieldType.NAME)
-    .with('EMAIL', () => FieldType.EMAIL)
-    .with('DATE', () => FieldType.DATE)
-    .with('TEXT', () => FieldType.TEXT)
-    .with('NUMBER', () => FieldType.NUMBER)
-    .with('RADIO', () => FieldType.RADIO)
-    .with('CHECKBOX', () => FieldType.CHECKBOX)
-    .with('DROPDOWN', () => FieldType.DROPDOWN)
-    .otherwise(() => {
-      throw new AppError(AppErrorCode.INVALID_BODY, {
-        message: `Invalid field type: ${fieldTypeString}`,
-      });
-    });
+  return (
+    match(normalizedType)
+      .with('SIGNATURE', () => FieldType.SIGNATURE)
+      .with('FREE_SIGNATURE', () => FieldType.FREE_SIGNATURE)
+      .with('INITIALS', () => FieldType.INITIALS)
+      /* Some PDFs use {{initial}} (singular); treat as initials. */
+      .with('INITIAL', () => FieldType.INITIALS)
+      .with('NAME', () => FieldType.NAME)
+      .with('EMAIL', () => FieldType.EMAIL)
+      .with('DATE', () => FieldType.DATE)
+      .with('TEXT', () => FieldType.TEXT)
+      .with('NUMBER', () => FieldType.NUMBER)
+      .with('RADIO', () => FieldType.RADIO)
+      .with('CHECKBOX', () => FieldType.CHECKBOX)
+      .with('DROPDOWN', () => FieldType.DROPDOWN)
+      .otherwise(() => {
+        throw new AppError(AppErrorCode.INVALID_BODY, {
+          message: `Invalid field type: ${fieldTypeString}`,
+        });
+      })
+  );
+};
+
+/**
+ * When searching the PDF for an INITIALS placeholder, some documents use `{{initial, r1}}`
+ * instead of `{{initials, r1}}`. Return strings to try in order (deduped).
+ */
+export const getInitialsPlaceholderSearchVariants = (placeholder: string): string[] => {
+  const variants: string[] = [placeholder];
+
+  if (/\{\{\s*initials\b/i.test(placeholder)) {
+    variants.push(placeholder.replace(/\{\{\s*initials\b/i, '{{initial'));
+  }
+
+  if (/\{\{\s*initial\b/i.test(placeholder) && !/\{\{\s*initials\b/i.test(placeholder)) {
+    variants.push(placeholder.replace(/\{\{\s*initial\b/i, '{{initials'));
+  }
+
+  return [...new Set(variants)];
 };
 
 /*

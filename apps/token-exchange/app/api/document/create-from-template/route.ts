@@ -33,13 +33,13 @@ const DEFAULT_PLACEHOLDER_FIELDS = [
  *
  * "Authoring logic": ensure the template has a signer and placeholder-based fields, then create
  * an envelope from it. Use when the template PDF has {{signature, r1}} (and optionally
- * {{date, r1}}, {{initials, r1}}, {{name, r1}}) but the template was never opened in the authoring UI.
+ * {{date, r1}}, {{initials, r1}} or {{initial, r1}}, {{name, r1}}) but the template was never opened in the authoring UI.
  *
  * Auth: Bearer TOKEN_EXCHANGE_SECRET. X-Documenso-API-Key or apiKey query (required).
  * Body (JSON): templateId (number), recipientEmail (string), recipientName?, title?, placeholders?
  *   placeholders: optional array of { placeholder: string, type: string, matchAll?: boolean }. Types: SIGNATURE, DATE, INITIALS, NAME, etc.
  *   matchAll: when true (default), creates a field at every occurrence of the placeholder in the PDF (e.g. 4 signature fields on 4 pages).
- *   Defaults to [{{signature, r1}}]. Add {{date, r1}}, {{initials, r1}}, or {{name, r1}} in placeholders if your PDF has them.
+ *   Defaults to [{{signature, r1}}]. Add {{date, r1}}, {{initials, r1}} (or {{initial, r1}}), or {{name, r1}} in placeholders if your PDF has them.
  *
  * Success: { envelopeId, signingUrl, signingToken }
  */

@@ -1,5 +1,5 @@
 import { PDF } from '@libpdf/core';
-import { EnvelopeType } from '@prisma/client';
+import { EnvelopeType, FieldType } from '@prisma/client';
 
 import { DOCUMENT_AUDIT_LOG_TYPE } from '@documenso/lib/types/document-audit-logs';
 import type { TFieldAndMeta } from '@documenso/lib/types/field-meta';
@@ -15,6 +15,7 @@ import { mapFieldToLegacyField } from '../../utils/fields';
 import { canRecipientFieldsBeModified } from '../../utils/recipients';
 import { getEnvelopeWhereInput } from '../envelope/get-envelope-by-id';
 import { type BoundingBox, whiteoutRegions } from '../pdf/auto-place-fields';
+import { getInitialsPlaceholderSearchVariants } from '../pdf/helpers';
 
 type CoordinatePosition = {
   page: number;
@@ -178,7 +179,12 @@ export const createEnvelopeFields = async ({
         });
       }
 
-      const matches = pdfDoc.findText(field.placeholder);
+      const searchStrings =
+        field.type === FieldType.INITIALS
+          ? getInitialsPlaceholderSearchVariants(field.placeholder)
+          : [field.placeholder];
+
+      const matches = searchStrings.flatMap((s) => pdfDoc.findText(s));
 
       if (matches.length === 0) {
         throw new AppError(AppErrorCode.INVALID_BODY, {
